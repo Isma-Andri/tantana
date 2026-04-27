@@ -1,31 +1,35 @@
 <?php
-$pageTitle = 'Tableau de bord — Chef de projet';
+$pageTitle = 'Tableau de bord - Chef de projet';
 require_once __DIR__ . '/includes/auth.php';
 requireLogin();
 requireRole('chef_projet');
 
 $user = getCurrentUser();
-$pdo  = getDB();
 
-// Stats
-$totalUsers    = $pdo->query("SELECT COUNT(*) FROM users")->fetchColumn();
-$totalMembers  = $pdo->query("SELECT COUNT(*) FROM users u JOIN roles r ON u.id_role=r.id_role WHERE r.libelle='membre'")->fetchColumn();
-$totalChefs    = $pdo->query("SELECT COUNT(*) FROM users u JOIN roles r ON u.id_role=r.id_role WHERE r.libelle='chef_projet'")->fetchColumn();
-
-// Liste des utilisateurs
-$stmt = $pdo->query("
-    SELECT u.id_user, u.nom, u.email, r.libelle AS role
-    FROM users u
-    JOIN roles r ON u.id_role = r.id_role
-    ORDER BY u.id_user DESC
-");
-$users = $stmt->fetchAll();
+try {
+    $pdo          = getDB();
+    $totalUsers   = $pdo->query("SELECT COUNT(*) FROM users")->fetchColumn();
+    $totalMembers = $pdo->query("SELECT COUNT(*) FROM users u JOIN roles r ON u.id_role=r.id_role WHERE r.libelle='membre'")->fetchColumn();
+    $totalChefs   = $pdo->query("SELECT COUNT(*) FROM users u JOIN roles r ON u.id_role=r.id_role WHERE r.libelle='chef_projet'")->fetchColumn();
+    $stmt         = $pdo->query("
+        SELECT u.id_user, u.nom, u.email, r.libelle AS role
+        FROM users u
+        JOIN roles r ON u.id_role = r.id_role
+        ORDER BY u.id_user DESC
+    ");
+    $users = $stmt->fetchAll();
+    $dbError = null;
+} catch (PDOException $e) {
+    error_log('[Tantana][dashboard_chef] ' . $e->getMessage());
+    $dbError      = 'Erreur base de donnees : ' . htmlspecialchars($e->getMessage());
+    $totalUsers   = $totalMembers = $totalChefs = '?';
+    $users        = [];
+}
 
 require_once __DIR__ . '/includes/header.php';
 ?>
 
 <div class="app-layout">
-  <!-- SIDEBAR -->
   <aside class="sidebar">
     <div class="sidebar-section">
       <div class="sidebar-label">Navigation</div>
@@ -36,100 +40,106 @@ require_once __DIR__ . '/includes/header.php';
       <a class="sidebar-link" href="#">
         <svg class="sidebar-icon" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M22 19a2 2 0 01-2 2H4a2 2 0 01-2-2V5a2 2 0 012-2h5l2 3h9a2 2 0 012 2z"/></svg>
         Projets
-        <span class="badge badge-blue" style="margin-left:auto;">Bientôt</span>
+        <span class="badge badge-blue" style="margin-left:auto;">Bientot</span>
       </a>
       <a class="sidebar-link" href="#">
         <svg class="sidebar-icon" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/></svg>
-        Tâches
-        <span class="badge badge-blue" style="margin-left:auto;">Bientôt</span>
+        Taches
+        <span class="badge badge-blue" style="margin-left:auto;">Bientot</span>
       </a>
     </div>
     <div class="sidebar-section">
-      <div class="sidebar-label">Équipe</div>
+      <div class="sidebar-label">Equipe</div>
       <a class="sidebar-link" href="#">
         <svg class="sidebar-icon" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/></svg>
         Membres
       </a>
       <a class="sidebar-link" href="#">
         <svg class="sidebar-icon" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
-        Activités
-        <span class="badge badge-blue" style="margin-left:auto;">Bientôt</span>
+        Activites
+        <span class="badge badge-blue" style="margin-left:auto;">Bientot</span>
       </a>
     </div>
-    <div style="margin-top:auto; padding-top:24px; border-top:1px solid var(--border);">
+    <div style="margin-top:auto;padding-top:24px;border-top:1px solid var(--border);">
       <a class="sidebar-link" href="logout.php" style="color:var(--red);">
         <svg class="sidebar-icon" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
-        Déconnexion
+        Deconnexion
       </a>
     </div>
   </aside>
 
-  <!-- MAIN -->
   <main class="main-content">
     <div class="page-header fade-up">
       <div style="display:flex;align-items:center;justify-content:space-between;">
         <div>
-          <h1>Bonjour, <?= htmlspecialchars($user['nom']) ?> 👋</h1>
-          <p>Voici un aperçu de votre espace chef de projet.</p>
+          <h1>Bonjour, <?= htmlspecialchars($user['nom']) ?></h1>
+          <p>Apercu de votre espace chef de projet.</p>
         </div>
         <span class="badge badge-purple" style="padding:8px 16px;font-size:.85rem;">Chef de projet</span>
       </div>
     </div>
 
-    <!-- STATS -->
+    <?php if ($dbError): ?>
+      <div class="alert alert-error" style="margin-bottom:24px;">
+        <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+        <?= $dbError ?>
+      </div>
+    <?php endif; ?>
+
     <div class="stats-grid mb-24 fade-up delay-1">
       <div class="stat-card blue">
         <div class="stat-label">Utilisateurs total</div>
         <div class="stat-value"><?= $totalUsers ?></div>
-        <div class="stat-sub">Tous rôles confondus</div>
+        <div class="stat-sub">Tous roles confondus</div>
       </div>
       <div class="stat-card purple">
         <div class="stat-label">Membres</div>
         <div class="stat-value"><?= $totalMembers ?></div>
-        <div class="stat-sub">Rôle : membre</div>
+        <div class="stat-sub">Role : membre</div>
       </div>
       <div class="stat-card green">
         <div class="stat-label">Chefs de projet</div>
         <div class="stat-value"><?= $totalChefs ?></div>
-        <div class="stat-sub">Rôle : chef_projet</div>
+        <div class="stat-sub">Role : chef_projet</div>
       </div>
       <div class="stat-card orange">
         <div class="stat-label">Projets actifs</div>
-        <div class="stat-value">—</div>
-        <div class="stat-sub">Module à venir</div>
+        <div class="stat-value">&mdash;</div>
+        <div class="stat-sub">Module a venir</div>
       </div>
     </div>
 
-    <!-- PROJETS PLACEHOLDER -->
     <div class="grid-2 mb-24 fade-up delay-2">
       <div class="card">
         <div class="card-header">
-          <span class="card-title">Projets récents</span>
+          <span class="card-title">Projets recents</span>
           <a href="#" class="btn btn-primary btn-sm">+ Nouveau projet</a>
         </div>
         <div style="text-align:center;padding:40px 0;color:var(--text-muted);">
-          <div style="font-size:2.5rem;margin-bottom:12px;">📁</div>
-          <p style="font-size:.9rem;">Aucun projet pour l'instant.<br>Créez votre premier projet pour commencer.</p>
-          <a href="#" class="btn btn-outline btn-sm" style="margin-top:16px;">Créer un projet</a>
+          <div style="font-size:2rem;font-family:var(--font-head);font-weight:800;color:var(--border);margin-bottom:12px;">0</div>
+          <p style="font-size:.9rem;">Aucun projet pour l'instant.<br>Creez votre premier projet pour commencer.</p>
+          <a href="#" class="btn btn-outline btn-sm" style="margin-top:16px;">Creer un projet</a>
         </div>
       </div>
       <div class="card">
         <div class="card-header">
-          <span class="card-title">Activité récente</span>
+          <span class="card-title">Activite recente</span>
         </div>
         <div style="text-align:center;padding:40px 0;color:var(--text-muted);">
-          <div style="font-size:2.5rem;margin-bottom:12px;">📊</div>
-          <p style="font-size:.9rem;">Aucune activité enregistrée.</p>
+          <div style="font-size:2rem;font-family:var(--font-head);font-weight:800;color:var(--border);margin-bottom:12px;">—</div>
+          <p style="font-size:.9rem;">Aucune activite enregistree.</p>
         </div>
       </div>
     </div>
 
-    <!-- TEAM TABLE -->
     <div class="card fade-up delay-3">
       <div class="card-header">
         <span class="card-title">Liste des utilisateurs</span>
         <a href="register.php" class="btn btn-outline btn-sm">+ Ajouter</a>
       </div>
+      <?php if (empty($users)): ?>
+        <div class="alert alert-info">Aucun utilisateur trouve.</div>
+      <?php else: ?>
       <div class="table-wrap">
         <table>
           <thead>
@@ -137,14 +147,14 @@ require_once __DIR__ . '/includes/header.php';
               <th>#</th>
               <th>Nom</th>
               <th>Email</th>
-              <th>Rôle</th>
+              <th>Role</th>
               <th>Actions</th>
             </tr>
           </thead>
           <tbody>
             <?php foreach ($users as $u): ?>
             <tr>
-              <td style="color:var(--text-muted);"><?= $u['id_user'] ?></td>
+              <td style="color:var(--text-muted);"><?= (int)$u['id_user'] ?></td>
               <td>
                 <div style="display:flex;align-items:center;gap:10px;">
                   <div class="avatar" style="width:30px;height:30px;font-size:.75rem;"><?= strtoupper(substr($u['nom'],0,1)) ?></div>
@@ -175,6 +185,7 @@ require_once __DIR__ . '/includes/header.php';
           </tbody>
         </table>
       </div>
+      <?php endif; ?>
     </div>
   </main>
 </div>

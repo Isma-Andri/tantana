@@ -1,12 +1,11 @@
 <?php
-$pageTitle = 'Connexion — Tantana';
+$pageTitle  = 'Connexion - Tantana';
 $showNavbar = false;
 require_once __DIR__ . '/includes/auth.php';
 startSession();
 
 if (isLoggedIn()) {
-    header('Location: dashboard.php');
-    exit;
+    redirect('dashboard.php');
 }
 
 $error = '';
@@ -19,8 +18,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     } else {
         $result = loginUser($email, $password);
         if ($result['success']) {
-            header('Location: dashboard.php');
-            exit;
+            redirect('dashboard.php');
         } else {
             $error = $result['message'];
         }
@@ -33,7 +31,7 @@ require_once __DIR__ . '/includes/header.php';
 <div class="auth-page">
   <div class="auth-box fade-up">
     <a href="index.php" class="auth-logo">Tantana</a>
-    <p class="auth-subtitle">Bienvenue ! Connectez-vous à votre espace.</p>
+    <p class="auth-subtitle">Bienvenue ! Connectez-vous a votre espace.</p>
 
     <?php if ($error): ?>
       <div class="alert alert-error">
@@ -55,9 +53,9 @@ require_once __DIR__ . '/includes/header.php';
       <div class="form-group">
         <label class="form-label" for="password">
           Mot de passe
-          <a href="#" style="float:right;font-size:.82rem;text-transform:none;letter-spacing:0;">Mot de passe oublié ?</a>
+          <a href="#" style="float:right;font-size:.82rem;text-transform:none;letter-spacing:0;">Mot de passe oublie ?</a>
         </label>
-        <input type="password" id="password" name="password" class="form-control" placeholder="••••••••" required>
+        <input type="password" id="password" name="password" class="form-control" placeholder="&bull;&bull;&bull;&bull;&bull;&bull;&bull;&bull;" required>
       </div>
       <button type="submit" class="btn btn-primary btn-block btn-lg" style="margin-top:8px;">
         Se connecter
@@ -65,13 +63,12 @@ require_once __DIR__ . '/includes/header.php';
     </form>
 
     <div class="divider">ou</div>
-
     <div class="auth-footer">
       Pas encore de compte ?
       <a href="register.php" style="font-weight:600;">S'inscrire</a>
     </div>
     <div class="auth-footer" style="margin-top:12px;">
-      <a href="index.php" style="color:var(--text-muted);font-size:.82rem;">← Retour à l'accueil</a>
+      <a href="index.php" style="color:var(--text-muted);font-size:.82rem;">&larr; Retour a l'accueil</a>
     </div>
   </div>
 </div>
