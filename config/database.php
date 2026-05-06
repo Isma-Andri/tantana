@@ -2,7 +2,7 @@
 define('DB_HOST',    'localhost');
 define('DB_NAME',    'Tantana');
 define('DB_USER',    'root');
-define('DB_PASS',    'Isma69_');
+define('DB_PASS',    '');   // tsy alefa anaty github
 define('DB_CHARSET', 'utf8mb4');
 
 function getDB(): PDO {
