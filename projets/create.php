@@ -61,7 +61,7 @@ require_once __DIR__ . '/../includes/header.php';
   <main class="main-content">
     <div class="page-header">
       <h1>Nouveau projet</h1>
-      <p>Remplissez les informations pour creer un projet.</p>
+      <p>Remplissez les informations pour créer un projet.</p>
     </div>
 
     <?php if ($errors): ?>
@@ -71,35 +71,54 @@ require_once __DIR__ . '/../includes/header.php';
       </div>
     <?php endif; ?>
 
-    <div class="card" style="max-width:680px;">
-      <form method="POST">
-        <div class="form-group">
-          <label class="form-label" for="nom">Nom du projet *</label>
-          <input type="text" id="nom" name="nom" class="form-control" required maxlength="150" value="<?= htmlspecialchars($data['nom']) ?>">
-        </div>
-        <div class="form-group">
-          <label class="form-label" for="description">Description</label>
-          <textarea id="description" name="description" class="form-control" rows="4" style="resize:vertical;"><?= htmlspecialchars($data['description']) ?></textarea>
-        </div>
-        <div class="grid-3" style="grid-template-columns:1fr 1fr 1fr;">
-          <div class="form-group">
-            <label class="form-label" for="date_debut">Date de debut</label>
-            <input type="date" id="date_debut" name="date_debut" class="form-control" value="<?= htmlspecialchars($data['date_debut']) ?>">
-          </div>
-          <div class="form-group">
-            <label class="form-label" for="date_fin">Date de fin</label>
-            <input type="date" id="date_fin" name="date_fin" class="form-control" value="<?= htmlspecialchars($data['date_fin']) ?>">
-          </div>
-          <div class="form-group">
-            <label class="form-label" for="date_limite">Date limite</label>
-            <input type="date" id="date_limite" name="date_limite" class="form-control" value="<?= htmlspecialchars($data['date_limite']) ?>">
+    <div class="project-grid">
+      <div class="card">
+        <div class="card-header">
+          <div>
+            <h2 class="card-title">Détails du projet</h2>
+            <p class="text-muted">Complétez les informations ci-dessous pour lancer votre projet.</p>
           </div>
         </div>
-        <div style="display:flex;gap:10px;margin-top:8px;">
-          <button type="submit" class="btn btn-primary">Creer le projet</button>
-          <a href="index.php" class="btn btn-outline">Annuler</a>
-        </div>
-      </form>
+        <form method="POST">
+          <div class="form-group">
+            <label class="form-label" for="nom">Nom du projet *</label>
+            <input type="text" id="nom" name="nom" class="form-control" required maxlength="150" value="<?= htmlspecialchars($data['nom']) ?>">
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="description">Description</label>
+            <textarea id="description" name="description" class="form-control" rows="4" style="resize:vertical;"><?= htmlspecialchars($data['description']) ?></textarea>
+          </div>
+          <div class="grid-3" style="grid-template-columns:1fr 1fr 1fr; gap: 16px;">
+            <div class="form-group">
+              <label class="form-label" for="date_debut">Date de début</label>
+              <input type="date" id="date_debut" name="date_debut" class="form-control" value="<?= htmlspecialchars($data['date_debut']) ?>">
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="date_fin">Date de fin</label>
+              <input type="date" id="date_fin" name="date_fin" class="form-control" value="<?= htmlspecialchars($data['date_fin']) ?>">
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="date_limite">Date limite</label>
+              <input type="date" id="date_limite" name="date_limite" class="form-control" value="<?= htmlspecialchars($data['date_limite']) ?>">
+            </div>
+          </div>
+          <div style="display:flex;gap:12px;margin-top:18px;flex-wrap:wrap;">
+            <button type="submit" class="btn btn-primary">Créer le projet</button>
+            <a href="index.php" class="btn btn-outline">Annuler</a>
+          </div>
+        </form>
+      </div>
+
+      <aside class="card project-help">
+        <h3 class="card-title">Conseils pour bien démarrer</h3>
+        <p>Un brief de projet clair aide votre équipe à comprendre la direction et à rester alignée.</p>
+        <ul class="feature-list">
+          <li>Choisissez un titre précis et mémorisable.</li>
+          <li>Fixez des échéances réalistes pour chaque étape.</li>
+          <li>Décrivez l’objectif principal en quelques phrases.</li>
+        </ul>
+        <div class="badge badge-blue" style="margin-top:20px;">Tantana | Interface moderne</div>
+      </aside>
     </div>
   </main>
 </div>

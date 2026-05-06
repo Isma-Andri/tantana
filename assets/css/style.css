@@ -98,7 +98,7 @@ a:hover { color: var(--accent); }
 /* ---- BUTTONS ---- */
 .btn {
   display: inline-flex; align-items: center; gap: 7px;
-  padding: 9px 18px; border-radius: var(--radius-sm);
+  padding: 9px 18px; border-radius: var(--radius);
   font-family: var(--font-body); font-size: .875rem; font-weight: 500;
   cursor: pointer; border: none; transition: all .2s;
   text-decoration: none; letter-spacing: .01em;
@@ -118,6 +118,31 @@ a:hover { color: var(--accent); }
 .btn-sm { padding: 6px 12px; font-size: .8rem; }
 .btn-lg { padding: 12px 26px; font-size: .95rem; }
 .btn-block { width: 100%; justify-content: center; }
+
+.main-content { padding: 30px 24px; width: 100%; }
+.project-grid {
+  display: grid;
+  grid-template-columns: 1.45fr 0.95fr;
+  gap: 24px;
+}
+.project-help {
+  background: var(--bg2);
+  border: 1px solid var(--border);
+}
+.project-help .card-title {
+  margin-bottom: 12px;
+}
+.feature-list {
+  margin: 18px 0 0 0;
+  padding-left: 20px;
+  color: var(--text-muted);
+}
+.feature-list li {
+  margin-bottom: 12px;
+}
+.feature-list li::marker {
+  color: var(--accent-dark);
+}
 
 /* ---- CARDS ---- */
 .card {
@@ -402,7 +427,7 @@ tr:last-child td { border-bottom: none; }
 
 /* ---- RESPONSIVE ---- */
 @media (max-width: 768px) {
-  .grid-2, .grid-3 { grid-template-columns: 1fr; }
+  .grid-2, .grid-3, .project-grid { grid-template-columns: 1fr; }
   .sidebar { display: none; }
   .hero h1 { font-size: 2rem; }
   .auth-box { padding: 28px 20px; }
