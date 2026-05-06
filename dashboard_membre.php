@@ -1,155 +1,162 @@
 <?php
-$pageTitle = 'Tableau de bord - Membre';
+$pageTitle = 'Tableau de bord - Tantana';
 require_once __DIR__ . '/includes/auth.php';
+require_once __DIR__ . '/includes/helpers.php';
 requireLogin();
 requireRole('membre');
-
 $user = getCurrentUser();
 
 try {
-    $pdo        = getDB();
-    $totalUsers = $pdo->query("SELECT COUNT(*) FROM users")->fetchColumn();
-    $dbError    = null;
+    $pdo = getDB();
+
+    $stP = $pdo->prepare("SELECT COUNT(*) FROM participations WHERE id_user=?"); $stP->execute([$user['id']]); $nb_projets = (int)$stP->fetchColumn();
+    $stT = $pdo->prepare("SELECT COUNT(*) FROM affectations a JOIN taches t ON a.id_tache=t.id_tache WHERE a.id_user=?"); $stT->execute([$user['id']]); $nb_taches = (int)$stT->fetchColumn();
+    $stD = $pdo->prepare("SELECT COUNT(*) FROM affectations a JOIN taches t ON a.id_tache=t.id_tache WHERE a.id_user=? AND t.id_statut=3"); $stD->execute([$user['id']]); $nb_done = (int)$stD->fetchColumn();
+    $stN = $pdo->prepare("SELECT COUNT(*) FROM notifications WHERE id_user=? AND est_lue=0"); $stN->execute([$user['id']]); $nb_notifs = (int)$stN->fetchColumn();
+
+    // Mes taches récentes
+    $stmt = $pdo->prepare("
+        SELECT t.*,p.nom AS projet_nom,s.libelle AS statut_lib,pr.libelle AS priorite_lib
+        FROM affectations a
+        JOIN taches t ON a.id_tache=t.id_tache
+        JOIN projets p ON t.id_projet=p.id_projet
+        JOIN statuts s ON t.id_statut=s.id_statut
+        JOIN priorites pr ON t.id_priorite=pr.id_priorite
+        WHERE a.id_user=? AND t.id_statut != 3
+        ORDER BY pr.id_priorite DESC, t.date_limite ASC
+        LIMIT 6
+    ");
+    $stmt->execute([$user['id']]);
+    $mes_taches = $stmt->fetchAll();
+
+    // Mes projets
+    $stmt = $pdo->prepare("
+        SELECT p.*,(SELECT COUNT(*) FROM taches t WHERE t.id_projet=p.id_projet AND t.id_statut=3) AS nb_d,(SELECT COUNT(*) FROM taches t WHERE t.id_projet=p.id_projet) AS nb_t
+        FROM participations pa
+        JOIN projets p ON pa.id_projet=p.id_projet
+        WHERE pa.id_user=?
+        ORDER BY p.date_creation DESC LIMIT 4
+    ");
+    $stmt->execute([$user['id']]);
+    $mes_projets = $stmt->fetchAll();
+
+    // Activité récente perso
+    $stmt = $pdo->prepare("SELECT a.*,p.nom AS projet_nom FROM actions a LEFT JOIN projets p ON a.id_projet=p.id_projet WHERE a.id_user=? ORDER BY a.date_action DESC LIMIT 6");
+    $stmt->execute([$user['id']]);
+    $activites = $stmt->fetchAll();
+
+    $dbErr = null;
 } catch (PDOException $e) {
-    error_log('[Tantana][dashboard_membre] ' . $e->getMessage());
-    $dbError    = 'Erreur base de donnees : ' . htmlspecialchars($e->getMessage());
-    $totalUsers = '?';
+    error_log('[dashboard_membre] ' . $e->getMessage());
+    $dbErr = $e->getMessage();
+    $nb_projets = $nb_taches = $nb_done = $nb_notifs = 0;
+    $mes_taches = $mes_projets = $activites = [];
 }
 
 require_once __DIR__ . '/includes/header.php';
 ?>
-
 <div class="app-layout">
-  <aside class="sidebar">
-    <div class="sidebar-section">
-      <div class="sidebar-label">Navigation</div>
-      <a class="sidebar-link active" href="dashboard_membre.php">
-        <svg class="sidebar-icon" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
-        Tableau de bord
-      </a>
-      <a class="sidebar-link" href="#">
-        <svg class="sidebar-icon" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M22 19a2 2 0 01-2 2H4a2 2 0 01-2-2V5a2 2 0 012-2h5l2 3h9a2 2 0 012 2z"/></svg>
-        Mes projets
-        <span class="badge badge-blue" style="margin-left:auto;">Bientot</span>
-      </a>
-      <a class="sidebar-link" href="#">
-        <svg class="sidebar-icon" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/></svg>
-        Mes taches
-        <span class="badge badge-blue" style="margin-left:auto;">Bientot</span>
-      </a>
-    </div>
-    <div class="sidebar-section">
-      <div class="sidebar-label">Compte</div>
-      <a class="sidebar-link" href="#">
-        <svg class="sidebar-icon" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
-        Mon profil
-      </a>
-      <a class="sidebar-link" href="#">
-        <svg class="sidebar-icon" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 01-3.46 0"/></svg>
-        Notifications
-      </a>
-    </div>
-    <div style="margin-top:auto;padding-top:24px;border-top:1px solid var(--border);">
-      <a class="sidebar-link" href="logout.php" style="color:var(--red);">
-        <svg class="sidebar-icon" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
-        Deconnexion
-      </a>
-    </div>
-  </aside>
-
+  <?php require __DIR__ . '/includes/sidebar.php'; ?>
   <main class="main-content">
     <div class="page-header fade-up">
-      <div style="display:flex;align-items:center;justify-content:space-between;">
+      <div style="display:flex;align-items:flex-start;justify-content:space-between;flex-wrap:wrap;gap:8px;">
         <div>
           <h1>Bonjour, <?= htmlspecialchars($user['nom']) ?></h1>
-          <p>Votre espace de travail personnel.</p>
+          <p>Votre espace de travail.</p>
         </div>
-        <span class="badge badge-blue" style="padding:8px 16px;font-size:.85rem;">Membre</span>
+        <span class="badge badge-blue" style="padding:6px 14px;">Membre</span>
       </div>
     </div>
 
-    <?php if ($dbError): ?>
-      <div class="alert alert-error" style="margin-bottom:24px;">
-        <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
-        <?= $dbError ?>
-      </div>
-    <?php endif; ?>
+    <?= flashHtml() ?>
+    <?php if (isset($dbErr)): ?><div class="alert alert-error"><?= htmlspecialchars($dbErr) ?></div><?php endif; ?>
 
     <div class="stats-grid mb-24 fade-up delay-1">
-      <div class="stat-card blue">
-        <div class="stat-label">Projets assignes</div>
-        <div class="stat-value">&mdash;</div>
-        <div class="stat-sub">Module a venir</div>
-      </div>
-      <div class="stat-card green">
-        <div class="stat-label">Taches en cours</div>
-        <div class="stat-value">&mdash;</div>
-        <div class="stat-sub">Module a venir</div>
-      </div>
-      <div class="stat-card orange">
-        <div class="stat-label">Taches terminees</div>
-        <div class="stat-value">&mdash;</div>
-        <div class="stat-sub">Module a venir</div>
-      </div>
-      <div class="stat-card purple">
-        <div class="stat-label">Notifications</div>
-        <div class="stat-value">0</div>
-        <div class="stat-sub">Non lues</div>
-      </div>
+      <div class="stat-card blue"><div class="stat-label">Projets</div><div class="stat-value"><?= $nb_projets ?></div><div class="stat-sub">Participations</div></div>
+      <div class="stat-card orange"><div class="stat-label">Taches</div><div class="stat-value"><?= $nb_taches ?></div><div class="stat-sub">Assignees</div></div>
+      <div class="stat-card green"><div class="stat-label">Terminees</div><div class="stat-value"><?= $nb_done ?></div><div class="stat-sub">Taches closes</div></div>
+      <div class="stat-card purple"><div class="stat-label">Notifications</div><div class="stat-value"><?= $nb_notifs ?></div><div class="stat-sub">Non lues</div></div>
     </div>
 
-    <div class="grid-2 fade-up delay-2">
-      <div class="card">
-        <div class="card-header">
-          <span class="card-title">Mes taches recentes</span>
-          <span class="badge badge-orange">A venir</span>
+    <div class="grid-2 fade-up delay-2" style="align-items:start;gap:20px;margin-bottom:20px;">
+      <!-- Mes taches -->
+      <div>
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
+          <h2 style="font-family:var(--font-head);font-size:1.05rem;font-weight:600;">Mes taches en cours</h2>
+          <a href="taches/mes_taches.php" class="btn btn-outline btn-sm">Voir toutes</a>
         </div>
-        <div style="text-align:center;padding:40px 0;color:var(--text-muted);">
-          <div style="font-size:2rem;font-family:var(--font-head);font-weight:800;color:var(--border);margin-bottom:12px;">0</div>
-          <p style="font-size:.9rem;">Aucune tache assignee pour l'instant.<br>Votre chef de projet vous en attribuera bientot.</p>
-        </div>
-      </div>
-
-      <div class="card">
-        <div class="card-header">
-          <span class="card-title">Mon profil</span>
-          <a href="#" class="btn btn-outline btn-sm">Modifier</a>
-        </div>
-        <div style="display:flex;flex-direction:column;gap:16px;padding-top:8px;">
-          <div style="display:flex;align-items:center;gap:16px;">
-            <div class="avatar" style="width:56px;height:56px;font-size:1.4rem;">
-              <?= strtoupper(substr($user['nom'], 0, 1)) ?>
+        <?php if (empty($mes_taches)): ?>
+          <div class="card" style="text-align:center;padding:32px;color:var(--text-muted);">Aucune tache assignee.</div>
+        <?php else: ?>
+          <div style="display:flex;flex-direction:column;gap:10px;">
+            <?php foreach ($mes_taches as $t): $j = daysUntil($t['date_limite']); ?>
+            <div class="card" style="padding:14px 18px;">
+              <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px;margin-bottom:5px;">
+                <a href="taches/view.php?id=<?= $t['id_tache'] ?>" style="font-weight:600;font-size:.875rem;color:var(--text);"><?= htmlspecialchars($t['nom']) ?></a>
+                <div style="display:flex;gap:5px;flex-shrink:0;">
+                  <span class="badge <?= classBadgeStatut($t['statut_lib']) ?>"><?= labelStatut($t['statut_lib']) ?></span>
+                  <span class="badge <?= classBadgePriorite($t['priorite_lib']) ?>"><?= labelPriorite($t['priorite_lib']) ?></span>
+                </div>
+              </div>
+              <div style="font-size:.78rem;color:var(--text-muted);display:flex;gap:10px;flex-wrap:wrap;">
+                <span><?= htmlspecialchars($t['projet_nom']) ?></span>
+                <?php if ($t['date_limite'] && $j!==null): ?>
+                  <span style="color:<?= $j<0?'var(--red)':($j<3?'var(--orange)':'inherit') ?>;">
+                    <?= $j<0?'Retard '.abs($j).'j':($j===0?"Auj.".$j.'j':$j.'j') ?>
+                  </span>
+                <?php endif; ?>
+              </div>
             </div>
-            <div>
-              <div style="font-family:var(--font-head);font-weight:700;font-size:1.1rem;"><?= htmlspecialchars($user['nom']) ?></div>
-              <div style="color:var(--text-muted);font-size:.85rem;"><?= htmlspecialchars($user['email']) ?></div>
-            </div>
+            <?php endforeach; ?>
           </div>
-          <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:8px;">
-            <div style="background:var(--bg3);border-radius:var(--radius-sm);padding:12px;">
-              <div style="font-size:.75rem;color:var(--text-muted);margin-bottom:4px;text-transform:uppercase;letter-spacing:.06em;">Role</div>
-              <div style="font-weight:600;">Membre</div>
-            </div>
-            <div style="background:var(--bg3);border-radius:var(--radius-sm);padding:12px;">
-              <div style="font-size:.75rem;color:var(--text-muted);margin-bottom:4px;text-transform:uppercase;letter-spacing:.06em;">Statut</div>
-              <div style="font-weight:600;color:var(--green);">Actif</div>
-            </div>
+        <?php endif; ?>
+      </div>
+
+      <!-- Mes projets + activite -->
+      <div style="display:flex;flex-direction:column;gap:16px;">
+        <div class="card">
+          <div class="card-header">
+            <span class="card-title">Mes projets</span>
+            <a href="projets/index.php" style="font-size:.8rem;color:var(--accent-dark);">Voir tous</a>
           </div>
+          <?php if (empty($mes_projets)): ?>
+            <p style="color:var(--text-muted);font-size:.875rem;">Aucun projet.</p>
+          <?php else: ?>
+            <div style="display:flex;flex-direction:column;gap:10px;">
+              <?php foreach ($mes_projets as $p): $pct=$p['nb_t']>0?round($p['nb_d']/$p['nb_t']*100):0; ?>
+              <div>
+                <div style="display:flex;justify-content:space-between;margin-bottom:5px;">
+                  <a href="projets/view.php?id=<?= $p['id_projet'] ?>" style="font-size:.875rem;font-weight:500;color:var(--text);"><?= htmlspecialchars($p['nom']) ?></a>
+                  <span style="font-size:.75rem;color:var(--text-muted);"><?= $pct ?>%</span>
+                </div>
+                <div class="progress-bar"><div class="progress-fill" style="width:<?= $pct ?>%"></div></div>
+              </div>
+              <?php endforeach; ?>
+            </div>
+          <?php endif; ?>
+        </div>
+
+        <div class="card">
+          <div class="card-header">
+            <span class="card-title">Mon activite recente</span>
+            <a href="historique/index.php" style="font-size:.8rem;color:var(--accent-dark);">Tout voir</a>
+          </div>
+          <?php if (empty($activites)): ?>
+            <p style="color:var(--text-muted);font-size:.875rem;">Aucune activite.</p>
+          <?php else: ?>
+            <div style="display:flex;flex-direction:column;gap:8px;">
+              <?php foreach ($activites as $a): ?>
+              <div style="font-size:.82rem;padding:7px 0;border-bottom:1px solid var(--border);line-height:1.4;">
+                <?= htmlspecialchars($a['description']) ?>
+                <div style="font-size:.72rem;color:var(--text-muted);margin-top:2px;"><?= fmtDatetime($a['date_action']) ?><?= $a['projet_nom']?' &bull; '.htmlspecialchars($a['projet_nom']):'' ?></div>
+              </div>
+              <?php endforeach; ?>
+            </div>
+          <?php endif; ?>
         </div>
       </div>
     </div>
 
-    <div class="card mt-24 fade-up delay-3">
-      <div class="card-header">
-        <span class="card-title">Mes projets</span>
-        <span class="badge badge-blue">Module a venir</span>
-      </div>
-      <div style="text-align:center;padding:40px 0;color:var(--text-muted);">
-        <div style="font-size:2rem;font-family:var(--font-head);font-weight:800;color:var(--border);margin-bottom:12px;">0</div>
-        <p style="font-size:.9rem;">Vous n'etes encore assigne a aucun projet.<br>Votre chef de projet vous ajoutera a un projet prochainement.</p>
-      </div>
-    </div>
   </main>
 </div>
-
-<?php require_once __DIR__ . '/includes/footer.php'; ?>
+<?php require __DIR__ . '/includes/footer.php'; ?>
