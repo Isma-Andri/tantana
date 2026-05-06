@@ -12,11 +12,11 @@
 ## Installation et test en local
 
 ```bash
-git clone https://github.com/ton-username/tantana.git
+git clone https://github.com/Isma-Andri/tantana.git
 cd tantana
 php -S localhost:8000
 ```
-Configurer la bdd dans `config/database.php`
+Configurer la base de données dans `config/database.php`
 
 ## Screenshots 
 ![](screenshot/tantana_index.png)
