@@ -2,11 +2,15 @@
 // public/index.php
 
 declare(strict_types=1);
+require_once __DIR__ . '/../config/database.php';
+require_once __DIR__ . '/../config/DbSessionsHandler.php';
+
+$handler = new DbSessionsHandler(getPDO());
+session_set_save_handler($handler, true);
 
 session_set_cookie_params(['lifetime' => 0, 'path' => '/', 'httponly' => true, 'samesite' => 'Lax']);
 session_start();
 
-require_once __DIR__ . '/../config/database.php';
 
 // --- Helpers globaux ---
 
