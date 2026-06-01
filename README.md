@@ -1,4 +1,5 @@
 # tantana
+*(plus de mise à jour pour l'instant, branche active: architecture/new-cdm)*
 
 ## Fonctionnalités CRUD disponibles
 
