@@ -5,8 +5,8 @@ require __DIR__ . '/../partials/header.php';
 require __DIR__ . '/../partials/navbar.php';
 require __DIR__ . '/../partials/flash.php';
 
+$isOwner = ((int) $projet['cree_par'] === (int) $user['id']);
 $isChef  = $user['role'] === 'Chef de projet';
-$isOwner = ((int)$projet['cree_par'] === (int)$user['id']);
 
 $statutColors = [
     'En attente' => 'badge-gray',
@@ -14,51 +14,40 @@ $statutColors = [
     'Terminé'    => 'badge-sun',
     'Annulé'     => 'badge-rose',
 ];
-$badgeClass = $statutColors[$projet['statut_libelle']] ?? 'badge-gray';
 
-function fmtDate(?string $d): string {
+function fmtDate(?string $d): string
+{
     return $d ? date('d/m/Y', strtotime($d)) : '—';
 }
 
-// Calcul de la progression temporelle
+// Progression temporelle en pourcentage
 $progress = 0;
 if ($projet['date_debut'] && $projet['date_limite']) {
-    $start   = strtotime($projet['date_debut']);
-    $end     = strtotime($projet['date_limite']);
-    $now     = time();
-    $total   = $end - $start;
-    $elapsed = $now - $start;
+    $total = strtotime($projet['date_limite']) - strtotime($projet['date_debut']);
     if ($total > 0) {
-        $progress = max(0, min(100, (int) round($elapsed / $total * 100)));
+        $progress = max(0, min(100, (int) round((time() - strtotime($projet['date_debut'])) / $total * 100)));
     }
 }
 ?>
 
 <main class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-10 page-in">
 
-    <!-- Breadcrumb -->
     <nav class="flex items-center gap-2 text-sm text-ink-500 mb-8">
         <a href="projets" class="hover:text-ink transition-colors">Projets</a>
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="w-3 h-3">
-            <path d="M9 18l6-6-6-6"/>
-        </svg>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="w-3 h-3"><path d="M9 18l6-6-6-6"/></svg>
         <span class="text-ink font-medium"><?= e($projet['nom']) ?></span>
     </nav>
 
     <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
 
-        <!-- Colonne principale -->
         <div class="lg:col-span-2 space-y-6">
 
-            <!-- Carte principale -->
             <div class="bg-white rounded-2xl shadow-card overflow-hidden">
                 <div class="h-2 bg-gradient-to-r from-jade via-jade/60 to-jade/20"></div>
                 <div class="p-7">
                     <div class="flex items-start justify-between gap-4 mb-5">
-                        <h1 class="font-display text-2xl font-extrabold text-ink leading-tight">
-                            <?= e($projet['nom']) ?>
-                        </h1>
-                        <span class="badge <?= $badgeClass ?> flex-shrink-0">
+                        <h1 class="font-display text-2xl font-extrabold text-ink leading-tight"><?= e($projet['nom']) ?></h1>
+                        <span class="badge <?= $statutColors[$projet['statut_libelle']] ?? 'badge-gray' ?> flex-shrink-0">
                             <?= e($projet['statut_libelle']) ?>
                         </span>
                     </div>
@@ -69,7 +58,6 @@ if ($projet['date_debut'] && $projet['date_limite']) {
                     <p class="text-ink-200 text-sm italic mb-6">Aucune description.</p>
                     <?php endif; ?>
 
-                    <!-- Progression temporelle -->
                     <?php if ($progress > 0): ?>
                     <div class="mb-6">
                         <div class="flex items-center justify-between text-xs text-ink-500 mb-1.5">
@@ -77,32 +65,29 @@ if ($projet['date_debut'] && $projet['date_limite']) {
                             <span class="font-semibold"><?= $progress ?>%</span>
                         </div>
                         <div class="h-2 bg-ink-100 rounded-full overflow-hidden">
-                            <div class="h-full bg-gradient-to-r from-jade to-jade/60 rounded-full transition-all"
-                                 style="width: <?= $progress ?>%"></div>
+                            <div class="h-full bg-gradient-to-r from-jade to-jade/60 rounded-full" style="width:<?= $progress ?>%"></div>
                         </div>
                     </div>
                     <?php endif; ?>
 
-                    <!-- Grille de dates -->
                     <div class="grid grid-cols-2 sm:grid-cols-4 gap-4">
                         <?php
                         $dates = [
-                            ['label' => 'Création',   'val' => fmtDate($projet['date_creation'])],
-                            ['label' => 'Début',      'val' => fmtDate($projet['date_debut'])],
-                            ['label' => 'Fin prévue', 'val' => fmtDate($projet['date_fin'])],
-                            ['label' => 'Deadline',   'val' => fmtDate($projet['date_limite'])],
+                            ['Création',   $projet['date_creation']],
+                            ['Début',      $projet['date_debut']],
+                            ['Fin prévue', $projet['date_fin']],
+                            ['Deadline',   $projet['date_limite']],
                         ];
-                        foreach ($dates as $d): ?>
+                        foreach ($dates as [$label, $val]): ?>
                         <div class="bg-ink-50 rounded-xl p-3 text-center">
-                            <p class="text-xs text-ink-500 font-medium"><?= $d['label'] ?></p>
-                            <p class="text-sm font-bold text-ink mt-1"><?= $d['val'] ?></p>
+                            <p class="text-xs text-ink-500 font-medium"><?= $label ?></p>
+                            <p class="text-sm font-bold text-ink mt-1"><?= fmtDate($val) ?></p>
                         </div>
                         <?php endforeach; ?>
                     </div>
                 </div>
             </div>
 
-            <!-- Actions (si propriétaire) -->
             <?php if ($isOwner && $isChef): ?>
             <div class="bg-white rounded-2xl shadow-card p-5">
                 <h2 class="text-sm font-semibold text-ink mb-4 uppercase tracking-wider">Actions</h2>
@@ -127,10 +112,8 @@ if ($projet['date_debut'] && $projet['date_limite']) {
             <?php endif; ?>
         </div>
 
-        <!-- Colonne latérale -->
         <div class="space-y-6">
 
-            <!-- Créateur -->
             <div class="bg-white rounded-2xl shadow-card p-5">
                 <h2 class="text-sm font-semibold text-ink mb-4 uppercase tracking-wider">Créateur</h2>
                 <div class="flex items-center gap-3">
@@ -144,7 +127,6 @@ if ($projet['date_debut'] && $projet['date_limite']) {
                 </div>
             </div>
 
-            <!-- Membres -->
             <div class="bg-white rounded-2xl shadow-card p-5">
                 <div class="flex items-center justify-between mb-4">
                     <h2 class="text-sm font-semibold text-ink uppercase tracking-wider">Membres</h2>
@@ -155,12 +137,10 @@ if ($projet['date_debut'] && $projet['date_limite']) {
                 <p class="text-xs text-ink-500 italic">Aucun membre.</p>
                 <?php else: ?>
                 <div class="space-y-3">
-                    <?php foreach ($membres as $m):
-                        $initials = mb_strtoupper(mb_substr($m['prenom'], 0, 1) . mb_substr($m['nom'], 0, 1));
-                    ?>
+                    <?php foreach ($membres as $m): ?>
                     <div class="flex items-center gap-3">
                         <div class="w-8 h-8 rounded-full bg-jade-light flex items-center justify-center text-jade text-xs font-bold flex-shrink-0">
-                            <?= e($initials) ?>
+                            <?= mb_strtoupper(mb_substr($m['prenom'], 0, 1) . mb_substr($m['nom'], 0, 1)) ?>
                         </div>
                         <div class="min-w-0">
                             <p class="text-sm font-medium text-ink truncate"><?= e($m['prenom'] . ' ' . $m['nom']) ?></p>
@@ -172,10 +152,7 @@ if ($projet['date_debut'] && $projet['date_limite']) {
                 <?php endif; ?>
             </div>
 
-            <!-- Lien retour -->
-            <a href="projets" class="btn-ghost w-full justify-center">
-                ← Retour aux projets
-            </a>
+            <a href="projets" class="btn-ghost w-full justify-center">Retour aux projets</a>
         </div>
     </div>
 
