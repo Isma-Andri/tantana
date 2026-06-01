@@ -9,37 +9,44 @@ class DbSessionsHandler implements SessionHandlerInterface  // interface php qui
         $this->pdo = $pdo;                                  // la connexion pdo à utiliser dans toutes les méthodes
     }
 
-    public function open($savePath, $sessionName): bool
+    // signature conforme à SessionHandlerInterface
+    public function open(string $savePath, string $sessionName): bool
     {
         // methode appelée au démarrage de la session
         return true;    // rien à signaler...
     }
 
+    // signature conforme à SessionHandlerInterface
     public function close(): bool 
     {
         // methode appelée à la fin de la session
         return true;
     }
 
-    public function read($id, $data): string        
+    // signature conforme à SessionHandlerInterface
+    public function read(string $id): string|false    // quand php veut recupérer les données de session pour $id      
     {
         // lire les données de session depuis la table sessions dans la bdd
         $stmt = $this->pdo->prepare('SELECT data FROM sessions WHERE id = :id');
         $stmt->execute(['id' => $id]);
         $row = $stmt->fetch(PDO::FETCH_ASSOC);
-        return $row ? $row['data'] : '';    // si la session existe, return les data, sinon return chaine vide
+
+        // si la session existe, return les data, sinon return chaine vide
+        return $row ? (string) $row['data'] : '';
     }
 
-    public function write($id, $data): bool
+    // signature conforme à SessionHandlerInterface
+    public function write(string $id, string $data): bool     // quand php sauvegarde la session
     {
         // récuperation de l'id de l'user connecté si la session a un user
         $userId = $_SESSION['user']['id'] ?? null;
 
+        // remplacer la ligne ou créer une nouvelle dans la table sessions
         $stmt = $this->pdo->prepare(
-            'REPLACE INTO sessions (id, data, last_activity,user_id) VALUES (:id, :data, :last_activity, :user_id)'
+            'REPLACE INTO sessions (id, data, last_activity, user_id) VALUES (:id, :data, :last_activity, :user_id)'
         );
 
-        return $stmt->execute([
+        return (bool) $stmt->execute([
             'id' => $id,
             'data' => $data,
             'last_activity' => time(),
@@ -48,19 +55,23 @@ class DbSessionsHandler implements SessionHandlerInterface  // interface php qui
 
     }
 
-    public function destroy($id): bool
+    // signature conforme à SessionHandlerInterface
+    public function destroy(string $id): bool
     {
-        // suppression de la session de la table quand l'user se déconnecte
-        $stmt = $this->pdo-prepare('DELETE FROM sessions WHERE id = :id');
-        return $stmt->execute(['id' => $id]);
+        // suppression de la session de la table quand l'user se déconnecte (quand on appelle session_destroy())
+        $stmt = $this->pdo->prepare('DELETE FROM sessions WHERE id = :id');
+        return (bool) $stmt->execute(['id' => $id]);
     }
 
-    public function gc($maxLifetime): bool
+    // signature conforme à SessionHandlerInterface
+    public function gc(int $maxLifetime): int|false  // ramasse miettes des sessions
     {
-        // nettoie les sessions qui ne sont plus valides (expirées après maxLifetime)
+        // nettoie les sessions qui ne sont plus valides (expirées après time() - $maxLifetime)
         $stmt = $this->pdo->prepare('DELETE FROM sessions WHERE last_activity < :time');
-        return $stmt->execute([
+        $ok = $stmt->execute([
             'time' => time() - $maxLifetime,
         ]);
+
+        return $ok ? $stmt->rowCount() : false;
     }
 }
