@@ -137,3 +137,12 @@ CREATE TABLE notification (
     id_user        INT UNSIGNED NOT NULL,
     CONSTRAINT fk_notif_user FOREIGN KEY (id_user) REFERENCES users(id_user) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+CREATE TABLE sessions (
+    id VARCHAR(255) NOT NULL,
+    data TEXT NOT NULL,
+    last_activity INT NOT NULL,
+    user_id INT UNSIGNED,
+    PRIMARY KEY (id),
+    CONSTRAINT fk_session_user FOREIGN KEY (user_id) REFERENCES users(id_user) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
