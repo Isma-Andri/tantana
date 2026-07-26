@@ -15,8 +15,8 @@ class Projet
     public function create(array $data): int
     {
         $stmt = $this->pdo->prepare(
-            'INSERT INTO projets (nom, description, date_creation, date_debut, date_fin, date_limite, id_statut, cree_par)
-             VALUES (:nom, :description, CURRENT_DATE, :date_debut, :date_fin, :date_limite, 1, :cree_par)'
+            'INSERT INTO projets (nom, description, date_creation, date_debut, date_fin, date_limite, id_statut, id_workflow, cree_par)
+             VALUES (:nom, :description, CURRENT_DATE, :date_debut, :date_fin, :date_limite, 1, :id_workflow, :cree_par)'
         );
         $stmt->execute([
             ':nom'         => trim($data['nom']),
@@ -24,6 +24,7 @@ class Projet
             ':date_debut'  => $data['date_debut']  ?: null,
             ':date_fin'    => $data['date_fin']    ?: null,
             ':date_limite' => $data['date_limite'] ?: null,
+            ':id_workflow' => (int) ($data['id_workflow'] ?? 1),
             ':cree_par'    => (int) $data['cree_par'],
         ]);
 
@@ -38,11 +39,12 @@ class Projet
         // Chef de projet : ses projets + ceux où il participe
         if ($role === 'Chef de projet') {
             $stmt = $this->pdo->prepare(
-                'SELECT DISTINCT p.*, s.libelle AS statut_libelle,
+                'SELECT DISTINCT p.*, s.libelle AS statut_libelle, sw.libelle AS workflow_libelle,
                         u.nom AS createur_nom, u.prenom AS createur_prenom,
                         (SELECT COUNT(*) FROM participer WHERE id_projet = p.id_projet) AS nb_membres
                  FROM projets p
                  JOIN statut s ON p.id_statut = s.id_statut
+                 JOIN statut_workflow sw ON p.id_workflow = sw.id_workflow
                  JOIN users  u ON p.cree_par  = u.id_user
                  LEFT JOIN participer pa ON pa.id_projet = p.id_projet AND pa.id_user = :uid
                  WHERE p.cree_par = :uid2 OR pa.id_user = :uid3
@@ -51,11 +53,12 @@ class Projet
             $stmt->execute([':uid' => $userId, ':uid2' => $userId, ':uid3' => $userId]);
         } else {
             $stmt = $this->pdo->prepare(
-                'SELECT p.*, s.libelle AS statut_libelle,
+                'SELECT p.*, s.libelle AS statut_libelle, sw.libelle AS workflow_libelle,
                         u.nom AS createur_nom, u.prenom AS createur_prenom,
                         (SELECT COUNT(*) FROM participer WHERE id_projet = p.id_projet) AS nb_membres
                  FROM projets p
                  JOIN statut     s  ON p.id_statut = s.id_statut
+                 JOIN statut_workflow sw ON p.id_workflow = sw.id_workflow
                  JOIN users      u  ON p.cree_par  = u.id_user
                  JOIN participer pa ON pa.id_projet = p.id_projet AND pa.id_user = :uid
                  ORDER BY p.date_creation DESC'
@@ -69,10 +72,11 @@ class Projet
     public function findById(int $id): ?array
     {
         $stmt = $this->pdo->prepare(
-            'SELECT p.*, s.libelle AS statut_libelle,
+            'SELECT p.*, s.libelle AS statut_libelle, sw.libelle AS workflow_libelle,
                     u.nom AS createur_nom, u.prenom AS createur_prenom
              FROM projets p
              JOIN statut s ON p.id_statut = s.id_statut
+             JOIN statut_workflow sw ON p.id_workflow = sw.id_workflow
              JOIN users  u ON p.cree_par  = u.id_user
              WHERE p.id_projet = :id LIMIT 1'
         );
@@ -86,7 +90,7 @@ class Projet
         $stmt = $this->pdo->prepare(
             'UPDATE projets
              SET nom = :nom, description = :description, date_debut = :date_debut,
-                 date_fin = :date_fin, date_limite = :date_limite, id_statut = :id_statut
+                 date_fin = :date_fin, date_limite = :date_limite, id_statut = :id_statut, id_workflow = :id_workflow
              WHERE id_projet = :id AND cree_par = :cree_par'
         );
 
@@ -97,6 +101,7 @@ class Projet
             ':date_fin'    => $data['date_fin']    ?: null,
             ':date_limite' => $data['date_limite'] ?: null,
             ':id_statut'   => (int) $data['id_statut'],
+            ':id_workflow' => (int) ($data['id_workflow'] ?? 1),
             ':id'          => $id,
             ':cree_par'    => $userId,
         ]);

@@ -28,6 +28,13 @@ CREATE TABLE statut (
 
 INSERT INTO statut (libelle) VALUES ('En attente'), ('En cours'), ('Terminé'), ('Annulé');
 
+CREATE TABLE statut_workflow (
+    id_workflow INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    libelle VARCHAR(50) NOT NULL UNIQUE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+INSERT INTO statut_workflow (libelle) VALUES ('Brouillon'), ('En révision'), ('Signé');
+
 CREATE TABLE projets (
     id_projet    INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
     nom          VARCHAR(255) NOT NULL,
@@ -37,8 +44,10 @@ CREATE TABLE projets (
     date_fin     DATE,
     date_limite  DATE,
     id_statut    INT UNSIGNED NOT NULL DEFAULT 1,
+    id_workflow  INT UNSIGNED NOT NULL DEFAULT 1,
     cree_par     INT UNSIGNED NOT NULL,
     CONSTRAINT fk_projet_statut   FOREIGN KEY (id_statut) REFERENCES statut(id_statut) ON UPDATE CASCADE ON DELETE RESTRICT,
+    CONSTRAINT fk_projet_workflow FOREIGN KEY (id_workflow) REFERENCES statut_workflow(id_workflow) ON UPDATE CASCADE ON DELETE RESTRICT,
     CONSTRAINT fk_projet_createur FOREIGN KEY (cree_par)  REFERENCES users(id_user)   ON UPDATE CASCADE ON DELETE RESTRICT
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
@@ -100,6 +109,24 @@ CREATE TABLE contenir (
     PRIMARY KEY (id_fichier, id_tache),
     CONSTRAINT fk_cont_fich  FOREIGN KEY (id_fichier) REFERENCES fichier(id_fichier) ON DELETE CASCADE,
     CONSTRAINT fk_cont_tache FOREIGN KEY (id_tache)   REFERENCES tache(id_tache)    ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+CREATE TABLE dossier_fichier (
+    id_fichier INT UNSIGNED NOT NULL,
+    id_projet  INT UNSIGNED NOT NULL,
+    PRIMARY KEY (id_fichier, id_projet),
+    CONSTRAINT fk_df_fich  FOREIGN KEY (id_fichier) REFERENCES fichier(id_fichier) ON DELETE CASCADE,
+    CONSTRAINT fk_df_projet FOREIGN KEY (id_projet) REFERENCES projets(id_projet) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+CREATE TABLE partage_dossier (
+    id_projet INT UNSIGNED NOT NULL,
+    id_user INT UNSIGNED NOT NULL,
+    niveau_acces VARCHAR(50) DEFAULT 'Lecture',
+    date_partage TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    PRIMARY KEY (id_projet, id_user),
+    CONSTRAINT fk_partage_projet FOREIGN KEY (id_projet) REFERENCES projets(id_projet) ON DELETE CASCADE,
+    CONSTRAINT fk_partage_user FOREIGN KEY (id_user) REFERENCES users(id_user) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 CREATE TABLE notification (
