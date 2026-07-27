@@ -1,102 +1,102 @@
 # Tantana
 
-> Diplomatic dossier management platform for state organizations and international bodies.
+> Plateforme de gestion de dossiers diplomatiques pour les organisations étatiques et les organismes internationaux.
 
 ![PHP](https://img.shields.io/badge/PHP-8.1+-777BB4?logo=php&logoColor=white)
 ![MySQL](https://img.shields.io/badge/MySQL-8.0+-4479A1?logo=mysql&logoColor=white)
-![License](https://img.shields.io/badge/license-MIT-green)
+![Licence](https://img.shields.io/badge/licence-MIT-green)
 
 ---
 
-## What is Tantana?
+## C'est quoi Tantana ?
 
-Tantana is a web application for managing diplomatic dossiers. It centralizes documents, deadlines, approvals, and discussions in one secure place. It is designed for ministries, embassies, and international organizations.
+Tantana est une application web de gestion de dossiers diplomatiques. Elle centralise les documents, les échéances, les approbations et les discussions en un seul endroit sécurisé. Elle est conçue pour les ministères, les ambassades et les organisations internationales.
 
-## Features
+## Fonctionnalités
 
-- **Dossier management** — Create, edit, and track diplomatic files
-- **Approval workflow** — Draft → Review → Signed
-- **File attachments** — Upload PDF, PPT, and other documents
-- **Access control** — Share dossiers with specific users and roles
-- **Comments** — Discuss directly inside a dossier
-- **Actions** — Assign tasks to collaborators with deadlines
-- **Activity log** — See who did what and when
-- **PDF export** — Export a full dossier as a PDF
-- **Admin panel** — Manage users and roles
+- **Gestion des dossiers** — Créer, modifier et suivre les dossiers diplomatiques
+- **Workflow d'approbation** — Brouillon → Révision → Signé
+- **Pièces jointes** — Déposer des fichiers PDF, PPT et autres documents
+- **Contrôle d'accès** — Partager un dossier avec des utilisateurs et rôles précis
+- **Commentaires** — Discuter directement dans un dossier
+- **Actions** — Assigner des tâches à des collaborateurs avec des échéances
+- **Fil d'activité** — Voir qui a fait quoi et quand
+- **Export PDF** — Exporter un dossier complet en PDF
+- **Panneau admin** — Gérer les utilisateurs et les rôles
 
-## Tech Stack
+## Stack technique
 
-| Layer      | Technology        |
-|------------|-------------------|
-| Backend    | PHP 8.1+ (native) |
-| Database   | MySQL 8.0+        |
-| Frontend   | HTML, Tailwind CSS, Vanilla JS |
-| Fonts      | Source Serif 4, Inter (Google Fonts) |
+| Couche     | Technologie             |
+|------------|-------------------------|
+| Backend    | PHP 8.1+ (natif)        |
+| Base de données | MySQL 8.0+         |
+| Frontend   | HTML, Tailwind CSS, JS Vanilla |
+| Polices    | Source Serif 4, Inter (Google Fonts) |
 
-## Getting Started
+## Démarrage rapide
 
-### Requirements
+### Prérequis
 
 - PHP 8.1+
 - MySQL 8.0+
-- A local web server (Apache, Nginx, or `php -S`)
+- Un serveur web local (Apache, Nginx, ou `php -S`)
 
 ### Installation
 
-1. **Clone the repo**
+1. **Cloner le dépôt**
    ```bash
    git clone https://github.com/Isma-Andri/tantana.git
    cd tantana
    ```
 
-2. **Set up the database**
+2. **Créer la base de données**
    ```bash
    mysql -u root -p -e "CREATE DATABASE tantana_new;"
    mysql -u root -p tantana_new < tantana_new.sql
    ```
 
-3. **Configure the connection**
+3. **Configurer la connexion**
 
-   Edit `config/database.php` and set your MySQL credentials.
+   Modifier `config/database.php` et renseigner vos identifiants MySQL.
 
-4. **Start the server**
+4. **Lancer le serveur**
    ```bash
    php -S localhost:5000 -t public/
    ```
 
-5. **Open the app**
+5. **Ouvrir l'application**
 
-   Go to `http://localhost:5000` in your browser.
+   Aller sur `http://localhost:5000` dans votre navigateur.
 
-## Project Structure
+## Structure du projet
 
 ```
 tantana/
-├── config/          # Database config
-├── controllers/     # Request handlers
-├── models/          # Database models (PDO)
-├── public/          # Entry point (index.php) + assets
+├── config/          # Configuration de la base de données
+├── controllers/     # Contrôleurs des requêtes
+├── models/          # Modèles de données (PDO)
+├── public/          # Point d'entrée (index.php) + assets
 │   └── img/         # Images
-├── views/           # PHP templates
-│   ├── admin/       # Admin panel
-│   ├── auth/        # Login, register
-│   ├── partials/    # Header, footer, navbar
-│   └── projets/     # Dossier views
-├── docs/            # Changelog and documentation
-└── tantana_new.sql  # Database schema
+├── views/           # Templates PHP
+│   ├── admin/       # Panneau d'administration
+│   ├── auth/        # Connexion, inscription
+│   ├── partials/    # En-tête, pied de page, barre de navigation
+│   └── projets/     # Vues des dossiers
+├── docs/            # Changelog et documentation
+└── tantana_new.sql  # Schéma de la base de données
 ```
 
-## Contributing
+## Contribuer
 
-1. Fork the repository
-2. Create a branch: `git checkout -b feat/your-feature`
-3. Commit your changes: `git commit -m "feat: add your feature"`
-4. Push and open a pull request
+1. Forker le dépôt
+2. Créer une branche : `git checkout -b feat/ma-fonctionnalite`
+3. Valider les changements : `git commit -m "feat: ajouter ma fonctionnalité"`
+4. Pousser et ouvrir une pull request
 
-## License
+## Licence
 
-MIT — see [LICENSE](LICENSE) for details.
+MIT — voir [LICENSE](LICENSE) pour plus de détails.
 
 ---
 
-Built by [Ismaël Andrimalala](https://github.com/Isma-Andri).
+Développé par [Ismaël Andrimalala](https://github.com/Isma-Andri).
