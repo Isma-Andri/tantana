@@ -8,4 +8,4 @@
 * Export PDF d'un dossier complet
 * Partage sécurisé avec contrôle d'accès granulaire
 
-La stack technique (PHP natif, MySQL, HTML/CSS/JS) reste inchangée. Les futures itérations s'appuieront sur des agents IA pour accélérer le développement d'un MVP présentable.
+La stack technique (PHP natif, MySQL, HTML/CSS/JS) reste inchangée. 
