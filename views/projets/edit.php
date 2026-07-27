@@ -9,9 +9,9 @@ require __DIR__ . '/../partials/flash.php';
 <main class="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8 py-10 page-in">
 
     <nav class="flex items-center gap-2 text-sm text-ink-500 mb-8 flex-wrap">
-        <a href="projets" class="hover:text-ink transition-colors">Projets</a>
+        <a href="/projets" class="hover:text-ink transition-colors">Projets</a>
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="w-3 h-3"><path d="M9 18l6-6-6-6"/></svg>
-        <a href="projets/show/<?= $projet['id_projet'] ?>" class="hover:text-ink transition-colors"><?= e($projet['nom']) ?></a>
+        <a href="/projets/show/<?= $projet['id_projet'] ?>" class="hover:text-ink transition-colors"><?= e($projet['nom']) ?></a>
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="w-3 h-3"><path d="M9 18l6-6-6-6"/></svg>
         <span class="text-ink font-medium">Modifier</span>
     </nav>
@@ -22,7 +22,7 @@ require __DIR__ . '/../partials/flash.php';
             <p class="text-white/60 text-sm mt-1">Modifiez les informations du projet.</p>
         </div>
 
-        <form action="projets/edit/<?= $projet['id_projet'] ?>" method="POST" class="p-8 space-y-6" novalidate>
+        <form action="/projets/edit/<?= $projet['id_projet'] ?>" method="POST" class="p-8 space-y-6" novalidate>
             <div>
                 <label class="block text-sm font-semibold text-ink mb-1.5" for="nom">
                     Nom du projet <span class="text-rose">*</span>
@@ -69,10 +69,10 @@ require __DIR__ . '/../partials/flash.php';
                     </svg>
                     Enregistrer
                 </button>
-                <a href="projets/show/<?= $projet['id_projet'] ?>" class="btn-ghost">Annuler</a>
+                <a href="/projets/show/<?= $projet['id_projet'] ?>" class="btn-ghost">Annuler</a>
 
                 <div class="ml-auto">
-                    <form action="projets/delete/<?= $projet['id_projet'] ?>" method="POST"
+                    <form action="/projets/delete/<?= $projet['id_projet'] ?>" method="POST"
                           onsubmit="return confirm('Supprimer définitivement ce projet ?')">
                         <button type="submit" class="btn-danger">
                             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="w-3.5 h-3.5">

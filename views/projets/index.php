@@ -43,7 +43,7 @@ function urgencyClass(?string $dateLimit): string
             </p>
         </div>
         <?php if ($isChef): ?>
-        <a href="projets/create" class="btn-primary">
+        <a href="/projets/create" class="btn-primary">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" class="w-4 h-4"><path d="M12 5v14M5 12h14"/></svg>
             Nouveau projet
         </a>
@@ -86,7 +86,7 @@ function urgencyClass(?string $dateLimit): string
             <?= $isChef ? 'Commencez par créer votre premier projet.' : 'Vous n\'avez été ajouté à aucun projet pour l\'instant.' ?>
         </p>
         <?php if ($isChef): ?>
-        <a href="projets/create" class="btn-jade">Créer un projet</a>
+        <a href="/projets/create" class="btn-jade">Créer un projet</a>
         <?php endif; ?>
     </div>
 
@@ -126,17 +126,17 @@ function urgencyClass(?string $dateLimit): string
                 </div>
 
                 <div class="flex items-center gap-2 pt-4 border-t border-ink-100">
-                    <a href="projets/show/<?= $p['id_projet'] ?>" class="btn-ghost text-xs flex-1 justify-center py-2">
+                    <a href="/projets/show/<?= $p['id_projet'] ?>" class="btn-ghost text-xs flex-1 justify-center py-2">
                         Voir le détail
                     </a>
                     <?php if ($isOwner && $isChef): ?>
-                    <a href="projets/edit/<?= $p['id_projet'] ?>"
+                    <a href="/projets/edit/<?= $p['id_projet'] ?>"
                        class="w-8 h-8 flex items-center justify-center rounded-lg text-ink-500 hover:bg-ink-100 transition-colors" title="Modifier">
                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="w-4 h-4">
                             <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
                         </svg>
                     </a>
-                    <form action="projets/delete/<?= $p['id_projet'] ?>" method="POST"
+                    <form action="/projets/delete/<?= $p['id_projet'] ?>" method="POST"
                           onsubmit="return confirm('Supprimer « <?= e(addslashes($p['nom'])) ?> » ?')">
                         <button type="submit"
                                 class="w-8 h-8 flex items-center justify-center rounded-lg text-rose hover:bg-rose-light transition-colors" title="Supprimer">

@@ -9,7 +9,7 @@ require __DIR__ . '/../partials/flash.php';
 <main class="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8 py-10 page-in">
 
     <nav class="flex items-center gap-2 text-sm text-ink-500 mb-8">
-        <a href="projets" class="hover:text-ink transition-colors">Projets</a>
+        <a href="/projets" class="hover:text-ink transition-colors">Projets</a>
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="w-3 h-3"><path d="M9 18l6-6-6-6"/></svg>
         <span class="text-ink font-medium">Nouveau projet</span>
     </nav>
@@ -20,7 +20,7 @@ require __DIR__ . '/../partials/flash.php';
             <p class="text-white/60 text-sm mt-1">Définissez les informations essentielles de votre projet.</p>
         </div>
 
-        <form action="projets/create" method="POST" class="p-8 space-y-6" novalidate>
+        <form action="/projets/create" method="POST" class="p-8 space-y-6" novalidate>
             <div>
                 <label class="block text-sm font-semibold text-ink mb-1.5" for="nom">
                     Nom du projet <span class="text-rose">*</span>
@@ -63,7 +63,7 @@ require __DIR__ . '/../partials/flash.php';
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" class="w-4 h-4"><path d="M12 5v14M5 12h14"/></svg>
                     Créer le projet
                 </button>
-                <a href="projets" class="btn-ghost">Annuler</a>
+                <a href="/projets" class="btn-ghost">Annuler</a>
             </div>
         </form>
     </div>

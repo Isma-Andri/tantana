@@ -11,7 +11,7 @@ $isChef   = $user['role'] === 'Chef de projet';
     <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
         <div class="flex items-center justify-between h-16">
 
-            <a href="projets" class="flex items-center gap-2 group">
+            <a href="/projets" class="flex items-center gap-2 group">
                 <div class="w-8 h-8 rounded-lg bg-ink flex items-center justify-center">
                     <svg viewBox="0 0 24 24" fill="none" class="w-4 h-4 text-jade" stroke="currentColor" stroke-width="2.5">
                         <path d="M9 3H5a2 2 0 0 0-2 2v4m6-6h10a2 2 0 0 1 2 2v4M9 3v18m0 0h10a2 2 0 0 0 2-2V9M9 21H5a2 2 0 0 1-2-2V9m0 0h18"/>
@@ -21,11 +21,11 @@ $isChef   = $user['role'] === 'Chef de projet';
             </a>
 
             <div class="hidden md:flex items-center gap-1">
-                <a href="projets" class="px-4 py-2 rounded-lg text-sm font-medium text-ink-500 hover:text-ink hover:bg-ink-50 transition-colors">
+                <a href="/projets" class="px-4 py-2 rounded-lg text-sm font-medium text-ink-500 hover:text-ink hover:bg-ink-50 transition-colors">
                     Projets
                 </a>
                 <?php if ($isChef): ?>
-                <a href="projets/create" class="px-4 py-2 rounded-lg text-sm font-medium text-jade hover:bg-jade-light transition-colors">
+                <a href="/projets/create" class="px-4 py-2 rounded-lg text-sm font-medium text-jade hover:bg-jade-light transition-colors">
                     + Nouveau projet
                 </a>
                 <?php endif; ?>
@@ -39,7 +39,7 @@ $isChef   = $user['role'] === 'Chef de projet';
                 <div class="w-9 h-9 rounded-full bg-ink flex items-center justify-center text-white text-xs font-bold">
                     <?= e($initials) ?>
                 </div>
-                <form action="logout" method="POST">
+                <form action="/logout" method="POST">
                     <button type="submit" title="Se déconnecter"
                             class="w-9 h-9 flex items-center justify-center rounded-lg text-ink-500 hover:bg-rose-light hover:text-rose transition-colors">
                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="w-4 h-4">

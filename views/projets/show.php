@@ -33,7 +33,7 @@ if ($projet['date_debut'] && $projet['date_limite']) {
 <main class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-10 page-in">
 
     <nav class="flex items-center gap-2 text-sm text-ink-500 mb-8">
-        <a href="projets" class="hover:text-ink transition-colors">Projets</a>
+        <a href="/projets" class="hover:text-ink transition-colors">Projets</a>
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="w-3 h-3"><path d="M9 18l6-6-6-6"/></svg>
         <span class="text-ink font-medium"><?= e($projet['nom']) ?></span>
     </nav>
@@ -92,13 +92,13 @@ if ($projet['date_debut'] && $projet['date_limite']) {
             <div class="bg-white rounded-2xl shadow-card p-5">
                 <h2 class="text-sm font-semibold text-ink mb-4 uppercase tracking-wider">Actions</h2>
                 <div class="flex flex-wrap gap-3">
-                    <a href="projets/edit/<?= $projet['id_projet'] ?>" class="btn-primary text-sm">
+                    <a href="/projets/edit/<?= $projet['id_projet'] ?>" class="btn-primary text-sm">
                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="w-4 h-4">
                             <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
                         </svg>
                         Modifier le projet
                     </a>
-                    <form action="projets/delete/<?= $projet['id_projet'] ?>" method="POST"
+                    <form action="/projets/delete/<?= $projet['id_projet'] ?>" method="POST"
                           onsubmit="return confirm('Supprimer ce projet définitivement ?')">
                         <button type="submit" class="btn-danger">
                             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="w-3.5 h-3.5">
@@ -152,7 +152,7 @@ if ($projet['date_debut'] && $projet['date_limite']) {
                 <?php endif; ?>
             </div>
 
-            <a href="projets" class="btn-ghost w-full justify-center">Retour aux projets</a>
+            <a href="/projets" class="btn-ghost w-full justify-center">Retour aux projets</a>
         </div>
     </div>
 
