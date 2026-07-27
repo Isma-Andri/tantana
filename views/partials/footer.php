@@ -1,7 +1,7 @@
     <footer class="mt-16 border-t border-ink-100 py-8">
         <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row items-center justify-between gap-3">
             <span class="font-display font-bold text-ink text-lg">Tantana</span>
-            <p class="text-xs text-ink-500">© <?= date('Y') ?> — Application de gestion de projet</p>
+            <p class="text-xs text-ink-500">Développé par Ismaël Andrimalala | © <?= date('Y') ?> — Agenda diplomatique</p>
         </div>
     </footer>
 

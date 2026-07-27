@@ -4,91 +4,74 @@ $pageTitle = 'Connexion';
 require __DIR__ . '/../partials/header.php';
 ?>
 
-<div class="min-h-screen flex">
+<div class="min-h-screen flex flex-col justify-between py-12 px-4 sm:px-6 lg:px-8 page-in">
+    <div class="max-w-md w-full mx-auto my-auto space-y-6">
+        
+        <!-- Header logo -->
+        <div class="text-center">
+            <a href="/" class="inline-flex items-center gap-3 group">
+                <img src="/img/diplomatic_seal.jpg" alt="Logo Sceau" class="w-12 h-12 rounded-full border-2 border-[#064e3b] shadow-sm group-hover:scale-105 transition-transform duration-300">
+                <span class="font-display text-3xl font-extrabold text-slate-900 tracking-tight">Tantana</span>
+            </a>
+            <h1 class="font-display text-2xl font-bold text-slate-900 mt-6">Accès Sécurisé</h1>
+            <p class="text-slate-500 text-sm mt-1">Plateforme centrale des affaires diplomatiques et gouvernementales</p>
+        </div>
 
-    <div class="hidden lg:flex lg:w-1/2 bg-ink flex-col justify-between p-12 relative overflow-hidden">
-        <svg class="absolute inset-0 w-full h-full opacity-5" viewBox="0 0 500 800" fill="none">
-            <circle cx="250" cy="400" r="350" stroke="white" stroke-width="60"/>
-            <circle cx="250" cy="400" r="200" stroke="white" stroke-width="40"/>
-            <circle cx="250" cy="400" r="80"  stroke="white" stroke-width="20"/>
-            <line x1="0" y1="0" x2="500" y2="800" stroke="white" stroke-width="2"/>
-            <line x1="500" y1="0" x2="0" y2="800" stroke="white" stroke-width="2"/>
-        </svg>
+        <!-- Login Card -->
+        <div class="bg-white rounded-2xl shadow-card border border-slate-200/80 overflow-hidden hover-lift">
+            <div class="h-2 bg-[#064e3b]"></div>
+            
+            <div class="p-8">
+                <?php require __DIR__ . '/../partials/flash.php'; ?>
 
-        <div class="relative z-10">
-            <div class="flex items-center gap-3">
-                <div class="w-10 h-10 rounded-xl bg-jade flex items-center justify-center">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" class="w-5 h-5">
-                        <path d="M9 3H5a2 2 0 0 0-2 2v4m6-6h10a2 2 0 0 1 2 2v4M9 3v18m0 0h10a2 2 0 0 0 2-2V9M9 21H5a2 2 0 0 1-2-2V9m0 0h18"/>
-                    </svg>
+                <div class="flex items-center gap-4 mb-6 p-3 bg-emerald-50/60 rounded-xl border border-emerald-100">
+                    <img src="/img/signed_treaty.jpg" alt="Traité" class="w-16 h-16 rounded-lg object-cover flex-shrink-0 border border-emerald-200/60">
+                    <div>
+                        <p class="text-xs font-semibold text-[#064e3b] uppercase tracking-wider">Espace Réservé</p>
+                        <p class="text-xs text-slate-600 mt-0.5">Authentification requise pour la consultation et le suivi des dossiers d'État.</p>
+                    </div>
                 </div>
-                <span class="font-display text-2xl font-bold text-white">Tantana</span>
+
+                <form action="login" method="POST" class="space-y-5" novalidate>
+                    <div>
+                        <label class="block text-xs font-semibold uppercase tracking-wider text-slate-700 mb-1.5" for="email">
+                            Adresse Email Officielle
+                        </label>
+                        <input type="email" id="email" name="email" class="t-input"
+                               placeholder="nom@gov.mg"
+                               value="<?= e($_POST['email'] ?? '') ?>"
+                               autocomplete="email" required autofocus>
+                    </div>
+
+                    <div>
+                        <label class="block text-xs font-semibold uppercase tracking-wider text-slate-700 mb-1.5" for="password">
+                            Mot de Passe
+                        </label>
+                        <input type="password" id="password" name="password" class="t-input"
+                               placeholder="••••••••" autocomplete="current-password" required>
+                    </div>
+
+                    <button type="submit" class="btn-primary w-full justify-center py-3 text-sm mt-2">
+                        Se connecter à l'espace
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="w-4 h-4">
+                            <path d="M5 12h14M12 5l7 7-7 7"/>
+                        </svg>
+                    </button>
+                </form>
+            </div>
+
+            <div class="bg-slate-50 border-t border-slate-100 p-4 text-center text-xs text-slate-500">
+                Pas encore de compte ? 
+                <a href="register" class="font-semibold text-[#064e3b] hover:underline">Demander une inscription</a>
             </div>
         </div>
 
-        <div class="relative z-10 space-y-6">
-            <blockquote class="text-white/80 text-lg leading-relaxed italic font-light">
-                "Organiser, collaborer, livrer.<br>Votre équipe mérite un outil à la hauteur."
-            </blockquote>
-            <div class="flex gap-3">
-                <div class="w-8 h-8 rounded-full bg-white/10 backdrop-blur flex items-center justify-center">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" class="w-4 h-4">
-                        <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2M9 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8zM23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/>
-                    </svg>
-                </div>
-                <div>
-                    <p class="text-white text-sm font-semibold">Gestion d'équipe simplifiée</p>
-                    <p class="text-white/60 text-xs">Membres, chefs de projet, tâches</p>
-                </div>
-            </div>
-        </div>
-
-        <div class="absolute bottom-0 right-0 w-64 h-64 bg-jade/20 rounded-full blur-3xl"></div>
     </div>
 
-    <div class="flex-1 flex flex-col justify-center px-6 sm:px-12 lg:px-16 py-12 bg-white page-in">
-        <?php require __DIR__ . '/../partials/flash.php'; ?>
-
-        <div class="max-w-sm w-full mx-auto">
-            <div class="lg:hidden flex items-center gap-2 mb-10">
-                <div class="w-8 h-8 rounded-lg bg-ink flex items-center justify-center">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="#00A67E" stroke-width="2.5" class="w-4 h-4">
-                        <path d="M9 3H5a2 2 0 0 0-2 2v4m6-6h10a2 2 0 0 1 2 2v4M9 3v18m0 0h10a2 2 0 0 0 2-2V9M9 21H5a2 2 0 0 1-2-2V9m0 0h18"/>
-                    </svg>
-                </div>
-                <span class="font-display text-xl font-bold">Tantana</span>
-            </div>
-
-            <h1 class="font-display text-3xl font-extrabold text-ink">Bon retour</h1>
-            <p class="text-ink-500 mt-1 text-sm">Connectez-vous à votre espace de travail</p>
-
-            <form action="login" method="POST" class="mt-8 space-y-5" novalidate>
-                <div>
-                    <label class="block text-sm font-semibold text-ink mb-1.5" for="email">Adresse email</label>
-                    <input type="email" id="email" name="email" class="t-input"
-                           placeholder="vous@exemple.com"
-                           value="<?= e($_POST['email'] ?? '') ?>"
-                           autocomplete="email" required>
-                </div>
-                <div>
-                    <label class="block text-sm font-semibold text-ink mb-1.5" for="password">Mot de passe</label>
-                    <input type="password" id="password" name="password" class="t-input"
-                           placeholder="••••••••" autocomplete="current-password" required>
-                </div>
-                <button type="submit" class="btn-primary w-full justify-center py-3 text-base">
-                    Se connecter
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="w-4 h-4">
-                        <path d="M5 12h14M12 5l7 7-7 7"/>
-                    </svg>
-                </button>
-            </form>
-
-            <p class="mt-6 text-center text-sm text-ink-500">
-                Pas encore de compte ?
-                <a href="register" class="font-semibold text-jade hover:text-jade-dark transition-colors">Créer un compte</a>
-            </p>
-        </div>
-    </div>
+    <!-- Footer -->
+    <footer class="text-center text-xs text-slate-400 mt-8">
+        Développé par Ismaël Andrimalala | © <?= date('Y') ?> Tantana Agenda Diplomatique
+    </footer>
 </div>
 
 <?php require __DIR__ . '/../partials/footer.php'; ?>

@@ -8,7 +8,7 @@ CREATE TABLE roles (
     libelle  VARCHAR(50) NOT NULL UNIQUE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
-INSERT INTO roles (libelle) VALUES ('Membre'), ('Chef de projet');
+INSERT INTO roles (libelle) VALUES ('Collaborateur'), ('Responsable de dossier'), ('Administrateur');
 
 CREATE TABLE users (
     id_user    INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
@@ -145,4 +145,24 @@ CREATE TABLE sessions (
     user_id INT UNSIGNED,
     PRIMARY KEY (id),
     CONSTRAINT fk_session_user FOREIGN KEY (user_id) REFERENCES users(id_user) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+CREATE TABLE commentaire (
+    id_commentaire INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    contenu TEXT NOT NULL,
+    date_commentaire TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    id_projet INT UNSIGNED NOT NULL,
+    id_user INT UNSIGNED NOT NULL,
+    CONSTRAINT fk_comm_projet FOREIGN KEY (id_projet) REFERENCES projets(id_projet) ON DELETE CASCADE,
+    CONSTRAINT fk_comm_user FOREIGN KEY (id_user) REFERENCES users(id_user) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+CREATE TABLE activity_log (
+    id_log INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    action VARCHAR(500) NOT NULL,
+    date_action TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    id_projet INT UNSIGNED NOT NULL,
+    id_user INT UNSIGNED NOT NULL,
+    CONSTRAINT fk_log_projet FOREIGN KEY (id_projet) REFERENCES projets(id_projet) ON DELETE CASCADE,
+    CONSTRAINT fk_log_user FOREIGN KEY (id_user) REFERENCES users(id_user) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;

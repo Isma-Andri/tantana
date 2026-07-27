@@ -11,19 +11,22 @@ require __DIR__ . '/../partials/flash.php';
     <nav class="flex items-center gap-2 text-sm text-ink-500 mb-8">
         <a href="/projets" class="hover:text-ink transition-colors">Projets</a>
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="w-3 h-3"><path d="M9 18l6-6-6-6"/></svg>
-        <span class="text-ink font-medium">Nouveau projet</span>
+        <span class="text-ink font-medium">Nouveau dossier</span>
     </nav>
 
     <div class="bg-white rounded-2xl shadow-card overflow-hidden">
-        <div class="bg-ink px-8 py-6">
-            <h1 class="font-display text-2xl font-extrabold text-white">Créer un projet</h1>
-            <p class="text-white/60 text-sm mt-1">Définissez les informations essentielles de votre projet.</p>
+        <div class="bg-[#064e3b] px-8 py-6 flex items-center justify-between gap-4">
+            <div>
+                <h1 class="font-display text-2xl font-bold text-white">Nouveau dossier de politique</h1>
+                <p class="text-white/70 text-sm mt-1">Définissez les informations essentielles de votre dossier.</p>
+            </div>
+            <img src="/img/signed_treaty.jpg" alt="Traité" class="w-16 h-16 rounded-xl object-cover border-2 border-white/20 shadow-sm flex-shrink-0 hidden sm:block">
         </div>
 
         <form action="/projets/create" method="POST" class="p-8 space-y-6" novalidate>
             <div>
                 <label class="block text-sm font-semibold text-ink mb-1.5" for="nom">
-                    Nom du projet <span class="text-rose">*</span>
+                    Nom du dossier <span class="text-rose">*</span>
                 </label>
                 <input type="text" id="nom" name="nom" class="t-input"
                        placeholder="Ex : Refonte du site web"
@@ -61,7 +64,7 @@ require __DIR__ . '/../partials/flash.php';
             <div class="flex items-center gap-3 pt-2">
                 <button type="submit" class="btn-jade">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" class="w-4 h-4"><path d="M12 5v14M5 12h14"/></svg>
-                    Créer le projet
+                    Créer le dossier
                 </button>
                 <a href="/projets" class="btn-ghost">Annuler</a>
             </div>

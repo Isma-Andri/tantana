@@ -6,7 +6,7 @@ require __DIR__ . '/../partials/navbar.php';
 require __DIR__ . '/../partials/flash.php';
 
 $user    = $_SESSION['user'];
-$isChef  = $user['role'] === 'Chef de projet';
+$isChef  = $user['role'] === 'Responsable de dossier';
 $total   = count($projets);
 $enCours = count(array_filter($projets, fn($p) => $p['statut_libelle'] === 'En cours'));
 $termines = count(array_filter($projets, fn($p) => $p['statut_libelle'] === 'Terminé'));
@@ -35,26 +35,30 @@ function urgencyClass(?string $dateLimit): string
 
 <main class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-10 page-in">
 
-    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
-        <div>
-            <h1 class="font-display text-3xl font-extrabold text-ink">Tableau de bord</h1>
-            <p class="text-ink-500 text-sm mt-1">
-                <?= $isChef ? 'Gérez et suivez vos projets.' : 'Vos projets en cours.' ?>
+    <div class="bg-white rounded-2xl shadow-card p-6 mb-8 flex flex-col md:flex-row items-center justify-between gap-6 border border-slate-100 hover-lift">
+        <div class="space-y-2 max-w-xl">
+            <span class="badge badge-jade">Agenda d'État</span>
+            <h1 class="font-display text-2xl font-bold text-slate-900">Tableau de Bord Diplomatique</h1>
+            <p class="text-sm text-slate-500 leading-relaxed">
+                <?= $isChef ? 'Gérez et suivez l\'évolution des traités, résolutions et dossiers de politique interministériels.' : 'Consultez les dossiers de politique et actions auxquels vous collaborez.' ?>
             </p>
+            <?php if ($isChef): ?>
+            <div class="pt-2">
+                <a href="/projets/create" class="btn-primary text-xs py-2 px-4">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" class="w-3.5 h-3.5"><path d="M12 5v14M5 12h14"/></svg>
+                    Nouveau dossier
+                </a>
+            </div>
+            <?php endif; ?>
         </div>
-        <?php if ($isChef): ?>
-        <a href="/projets/create" class="btn-primary">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" class="w-4 h-4"><path d="M12 5v14M5 12h14"/></svg>
-            Nouveau projet
-        </a>
-        <?php endif; ?>
+        <img src="/img/diplomatic_summit.jpg" alt="Sommet Diplomatique" class="w-full md:w-72 h-36 rounded-xl object-cover border border-slate-200/60 shadow-sm flex-shrink-0">
     </div>
 
     <!-- Statistiques -->
     <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-10">
         <?php
         $stats = [
-            ['Total projets', $total,    'M3 7v10a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2z', 'text-ink bg-ink-100'],
+            ['Total dossiers', $total,    'M3 7v10a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2z', 'text-ink bg-ink-100'],
             ['En cours',      $enCours,  'M13 10V3L4 14h7v7l9-11h-7z',                                                'text-jade bg-jade-light'],
             ['Terminés',      $termines, 'M9 12l2 2 4-4m6 2a9 9 0 1 1-18 0 9 9 0 0 1 18 0z',                         'text-sun bg-sun-light'],
         ];
@@ -75,18 +79,14 @@ function urgencyClass(?string $dateLimit): string
 
     <!-- Liste des projets -->
     <?php if (empty($projets)): ?>
-    <div class="bg-white rounded-2xl shadow-card p-16 text-center">
-        <div class="w-16 h-16 rounded-full bg-ink-100 flex items-center justify-center mx-auto mb-4">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" class="w-8 h-8 text-ink-200">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M9 13h6m-3-3v6m-9 1V7a2 2 0 0 1 2-2h6l2 2h6a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
-            </svg>
-        </div>
-        <h3 class="font-display font-bold text-xl text-ink mb-1">Aucun projet</h3>
+    <div class="bg-white rounded-2xl shadow-card p-12 text-center max-w-lg mx-auto">
+        <img src="/img/diplomatic_desk.jpg" alt="Aucun dossier" class="w-36 h-36 rounded-2xl border-2 border-slate-100 shadow-sm mx-auto mb-6 object-cover float-slow">
+        <h3 class="font-display font-bold text-xl text-slate-900 mb-1">Aucun dossier de politique</h3>
         <p class="text-ink-500 text-sm mb-6">
-            <?= $isChef ? 'Commencez par créer votre premier projet.' : 'Vous n\'avez été ajouté à aucun projet pour l\'instant.' ?>
+            <?= $isChef ? 'Commencez par créer votre premier dossier de politique.' : 'Vous n\'avez été ajouté à aucun dossier pour l\'instant.' ?>
         </p>
         <?php if ($isChef): ?>
-        <a href="/projets/create" class="btn-jade">Créer un projet</a>
+        <a href="/projets/create" class="btn-jade">Créer un dossier</a>
         <?php endif; ?>
     </div>
 
@@ -96,8 +96,8 @@ function urgencyClass(?string $dateLimit): string
             $badgeClass = $statutColors[$p['statut_libelle']] ?? 'badge-gray';
             $isOwner    = ((int) $p['cree_par'] === (int) $user['id']);
         ?>
-        <div class="bg-white rounded-2xl shadow-card hover:shadow-lift transition-shadow duration-300 flex flex-col overflow-hidden group">
-            <div class="h-1.5 bg-gradient-to-r from-jade to-jade/40 rounded-t-2xl"></div>
+        <div class="bg-white rounded-2xl shadow-card hover-lift transition-all duration-300 flex flex-col overflow-hidden group">
+            <div class="h-1.5 bg-[#064e3b] rounded-t-2xl"></div>
             <div class="p-5 flex flex-col flex-1">
                 <div class="flex items-start justify-between gap-2 mb-3">
                     <h3 class="font-display font-bold text-lg text-ink leading-tight group-hover:text-jade transition-colors line-clamp-2">
@@ -121,7 +121,7 @@ function urgencyClass(?string $dateLimit): string
                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="w-3.5 h-3.5">
                             <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2M9 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8zM23 21v-2a3 3 0 0 0-5.356-1.857"/>
                         </svg>
-                        <span><?= (int) $p['nb_membres'] ?> membre<?= $p['nb_membres'] > 1 ? 's' : '' ?></span>
+                        <span><?= (int) $p['nb_membres'] ?> collaborateur<?= $p['nb_membres'] > 1 ? 's' : '' ?></span>
                     </div>
                 </div>
 

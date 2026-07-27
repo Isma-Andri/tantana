@@ -9,7 +9,7 @@ require __DIR__ . '/../partials/flash.php';
 <main class="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8 py-10 page-in">
 
     <nav class="flex items-center gap-2 text-sm text-ink-500 mb-8 flex-wrap">
-        <a href="/projets" class="hover:text-ink transition-colors">Projets</a>
+        <a href="/projets" class="hover:text-ink transition-colors">Dossiers</a>
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="w-3 h-3"><path d="M9 18l6-6-6-6"/></svg>
         <a href="/projets/show/<?= $projet['id_projet'] ?>" class="hover:text-ink transition-colors"><?= e($projet['nom']) ?></a>
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="w-3 h-3"><path d="M9 18l6-6-6-6"/></svg>
@@ -17,15 +17,18 @@ require __DIR__ . '/../partials/flash.php';
     </nav>
 
     <div class="bg-white rounded-2xl shadow-card overflow-hidden">
-        <div class="bg-gradient-to-r from-ink to-ink/80 px-8 py-6">
-            <h1 class="font-display text-2xl font-extrabold text-white">Modifier le projet</h1>
-            <p class="text-white/60 text-sm mt-1">Modifiez les informations du projet.</p>
+        <div class="bg-[#064e3b] px-8 py-6 flex items-center justify-between gap-4">
+            <div>
+                <h1 class="font-display text-2xl font-bold text-white">Modifier le dossier</h1>
+                <p class="text-white/70 text-sm mt-1">Modifiez les informations du dossier de politique.</p>
+            </div>
+            <img src="/img/signed_treaty.jpg" alt="Traité" class="w-16 h-16 rounded-xl object-cover border-2 border-white/20 shadow-sm flex-shrink-0 hidden sm:block">
         </div>
 
         <form action="/projets/edit/<?= $projet['id_projet'] ?>" method="POST" class="p-8 space-y-6" novalidate>
             <div>
                 <label class="block text-sm font-semibold text-ink mb-1.5" for="nom">
-                    Nom du projet <span class="text-rose">*</span>
+                    Nom du dossier <span class="text-rose">*</span>
                 </label>
                 <input type="text" id="nom" name="nom" class="t-input"
                        value="<?= e($_POST['nom'] ?? $projet['nom']) ?>"
@@ -38,16 +41,30 @@ require __DIR__ . '/../partials/flash.php';
                           maxlength="2000"><?= e($_POST['description'] ?? $projet['description'] ?? '') ?></textarea>
             </div>
 
-            <div>
-                <label class="block text-sm font-semibold text-ink mb-1.5" for="id_statut">Statut</label>
-                <select id="id_statut" name="id_statut" class="t-input">
-                    <?php foreach ($statuts as $s): ?>
-                    <option value="<?= $s['id_statut'] ?>"
-                        <?= ($s['id_statut'] == ($_POST['id_statut'] ?? $projet['id_statut'])) ? 'selected' : '' ?>>
-                        <?= e($s['libelle']) ?>
-                    </option>
-                    <?php endforeach; ?>
-                </select>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                    <label class="block text-sm font-semibold text-ink mb-1.5" for="id_statut">Statut</label>
+                    <select name="id_statut" id="id_statut" class="t-input" required>
+                        <?php foreach ($statuts as $s): ?>
+                            <option value="<?= $s['id_statut'] ?>" <?= ($s['id_statut'] == ($_POST['id_statut'] ?? $projet['id_statut'])) ? 'selected' : '' ?>>
+                                <?= e($s['libelle']) ?>
+                            </option>
+                        <?php endforeach; ?>
+                    </select>
+                </div>
+                
+                <div>
+                    <label class="block text-sm font-semibold text-ink mb-1.5" for="id_workflow">
+                        Workflow d'approbation
+                    </label>
+                    <select name="id_workflow" id="id_workflow" class="t-input" required>
+                        <?php foreach ($workflows as $w): ?>
+                            <option value="<?= $w['id_workflow'] ?>" <?= ($w['id_workflow'] == ($_POST['id_workflow'] ?? $projet['id_workflow'])) ? 'selected' : '' ?>>
+                                <?= e($w['libelle']) ?>
+                            </option>
+                        <?php endforeach; ?>
+                    </select>
+                </div>
             </div>
 
             <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
@@ -73,12 +90,12 @@ require __DIR__ . '/../partials/flash.php';
 
                 <div class="ml-auto">
                     <form action="/projets/delete/<?= $projet['id_projet'] ?>" method="POST"
-                          onsubmit="return confirm('Supprimer définitivement ce projet ?')">
+                          onsubmit="return confirm('Supprimer définitivement ce dossier ?')">
                         <button type="submit" class="btn-danger">
                             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="w-3.5 h-3.5">
                                 <polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6m3 0V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/>
                             </svg>
-                            Supprimer le projet
+                            Supprimer le dossier
                         </button>
                     </form>
                 </div>

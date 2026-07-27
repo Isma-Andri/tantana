@@ -73,4 +73,41 @@ class User
     {
         return $this->pdo->query('SELECT * FROM roles ORDER BY id_role')->fetchAll();
     }
+
+    public function getAllUsers(): array
+    {
+        return $this->pdo->query(
+            'SELECT u.id_user, u.nom, u.prenom, u.email, u.created_at, u.id_role, r.libelle AS role_libelle
+             FROM users u
+             JOIN roles r ON u.id_role = r.id_role
+             ORDER BY u.created_at DESC'
+        )->fetchAll();
+    }
+
+    public function updateRole(int $idUser, int $idRole): bool
+    {
+        $stmt = $this->pdo->prepare('UPDATE users SET id_role = :rid WHERE id_user = :uid');
+        return $stmt->execute([':rid' => $idRole, ':uid' => $idUser]);
+    }
+
+    public function deleteUser(int $idUser): bool
+    {
+        $stmt = $this->pdo->prepare('DELETE FROM users WHERE id_user = :uid');
+        return $stmt->execute([':uid' => $idUser]);
+    }
+
+    public function getSystemStats(): array
+    {
+        $totalUsers    = (int) $this->pdo->query('SELECT COUNT(*) FROM users')->fetchColumn();
+        $totalDossiers = (int) $this->pdo->query('SELECT COUNT(*) FROM projets')->fetchColumn();
+        $totalFichiers = (int) $this->pdo->query('SELECT COUNT(*) FROM fichier')->fetchColumn();
+        $totalActions  = (int) $this->pdo->query('SELECT COUNT(*) FROM tache')->fetchColumn();
+
+        return [
+            'users'    => $totalUsers,
+            'dossiers' => $totalDossiers,
+            'fichiers' => $totalFichiers,
+            'actions'  => $totalActions,
+        ];
+    }
 }

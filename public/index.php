@@ -41,10 +41,10 @@ function requireAuth(): void
     }
 }
 
-function requireRole(string $role): void
+function requireRole(string ...$roles): void
 {
     requireAuth();
-    if ($_SESSION['user']['role'] !== $role) {
+    if (!in_array($_SESSION['user']['role'], $roles, true)) {
         setFlash('error', 'Accès refusé.');
         redirect('projets');
     }
@@ -87,6 +87,20 @@ if (in_array($seg0, ['login', 'register', 'logout'], true)) {
     exit;
 }
 
+// Admin
+if ($seg0 === 'admin') {
+    require_once __DIR__ . '/../controllers/AdminController.php';
+    $ctrl = new AdminController();
+
+    match (true) {
+        $seg1 === ''            && $method === 'GET'  => $ctrl->index(),
+        $seg1 === 'user' && isset($segments[2]) && $segments[2] === 'role'   && $method === 'POST' => $ctrl->updateRole(),
+        $seg1 === 'user' && isset($segments[2]) && $segments[2] === 'delete' && $method === 'POST' => $ctrl->deleteUser(),
+        default => redirect('admin'),
+    };
+    exit;
+}
+
 // Projets
 if ($seg0 === 'projets') {
     require_once __DIR__ . '/../controllers/ProjetController.php';
@@ -100,6 +114,12 @@ if ($seg0 === 'projets') {
         $seg1 === 'edit'   && $id > 0 && $method === 'GET'  => $ctrl->edit($id),
         $seg1 === 'edit'   && $id > 0 && $method === 'POST' => $ctrl->update($id),
         $seg1 === 'delete' && $id > 0 && $method === 'POST' => $ctrl->delete($id),
+        $seg1 === 'upload' && $id > 0 && $method === 'POST' => $ctrl->upload($id),
+        $seg1 === 'share'  && $id > 0 && $method === 'POST' => $ctrl->share($id),
+        $seg1 === 'export' && $id > 0 && $method === 'GET'  => $ctrl->exportPdf($id),
+        $seg1 === 'comment'       && $id > 0 && $method === 'POST' => $ctrl->comment($id),
+        $seg1 === 'add-action'    && $id > 0 && $method === 'POST' => $ctrl->addAction($id),
+        $seg1 === 'update-action' && $id > 0 && $method === 'POST' => $ctrl->updateAction($id),
         default                                             => $ctrl->index(),
     };
     exit;

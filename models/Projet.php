@@ -29,15 +29,29 @@ class Projet
         ]);
 
         $id = (int) $this->pdo->lastInsertId();
-        $this->addMember($id, (int) $data['cree_par'], 'Chef de projet');
+        $this->addMember($id, (int) $data['cree_par'], 'Responsable de dossier');
 
         return $id;
     }
 
     public function getAllForUser(int $userId, string $role): array
     {
-        // Chef de projet : ses projets + ceux où il participe
-        if ($role === 'Chef de projet') {
+        if ($role === 'Administrateur') {
+            $stmt = $this->pdo->query(
+                'SELECT p.*, s.libelle AS statut_libelle, sw.libelle AS workflow_libelle,
+                        u.nom AS createur_nom, u.prenom AS createur_prenom,
+                        (SELECT COUNT(*) FROM participer WHERE id_projet = p.id_projet) AS nb_membres
+                 FROM projets p
+                 JOIN statut s ON p.id_statut = s.id_statut
+                 JOIN statut_workflow sw ON p.id_workflow = sw.id_workflow
+                 JOIN users  u ON p.cree_par  = u.id_user
+                 ORDER BY p.date_creation DESC'
+            );
+            return $stmt->fetchAll();
+        }
+
+        // Responsable de dossier : ses projets + ceux où il participe
+        if ($role === 'Responsable de dossier') {
             $stmt = $this->pdo->prepare(
                 'SELECT DISTINCT p.*, s.libelle AS statut_libelle, sw.libelle AS workflow_libelle,
                         u.nom AS createur_nom, u.prenom AS createur_prenom,
@@ -85,16 +99,18 @@ class Projet
         return $stmt->fetch() ?: null;
     }
 
-    public function update(int $id, array $data, int $userId): bool
+    public function update(int $id, array $data, int $userId, bool $isAdmin = false): bool
     {
-        $stmt = $this->pdo->prepare(
-            'UPDATE projets
+        $sql = 'UPDATE projets
              SET nom = :nom, description = :description, date_debut = :date_debut,
                  date_fin = :date_fin, date_limite = :date_limite, id_statut = :id_statut, id_workflow = :id_workflow
-             WHERE id_projet = :id AND cree_par = :cree_par'
-        );
+             WHERE id_projet = :id';
+        if (!$isAdmin) {
+            $sql .= ' AND cree_par = :cree_par';
+        }
+        $stmt = $this->pdo->prepare($sql);
 
-        return $stmt->execute([
+        $params = [
             ':nom'         => trim($data['nom']),
             ':description' => trim($data['description'] ?? ''),
             ':date_debut'  => $data['date_debut']  ?: null,
@@ -103,20 +119,31 @@ class Projet
             ':id_statut'   => (int) $data['id_statut'],
             ':id_workflow' => (int) ($data['id_workflow'] ?? 1),
             ':id'          => $id,
-            ':cree_par'    => $userId,
-        ]);
+        ];
+        if (!$isAdmin) {
+            $params[':cree_par'] = $userId;
+        }
+
+        return $stmt->execute($params);
     }
 
-    public function delete(int $id, int $userId): bool
+    public function delete(int $id, int $userId, bool $isAdmin = false): bool
     {
-        $stmt = $this->pdo->prepare(
-            'DELETE FROM projets WHERE id_projet = :id AND cree_par = :cree_par'
-        );
+        $sql = 'DELETE FROM projets WHERE id_projet = :id';
+        if (!$isAdmin) {
+            $sql .= ' AND cree_par = :cree_par';
+        }
+        $stmt = $this->pdo->prepare($sql);
 
-        return $stmt->execute([':id' => $id, ':cree_par' => $userId]);
+        $params = [':id' => $id];
+        if (!$isAdmin) {
+            $params[':cree_par'] = $userId;
+        }
+
+        return $stmt->execute($params);
     }
 
-    public function addMember(int $projetId, int $userId, string $role = 'Membre'): bool
+    public function addMember(int $projetId, int $userId, string $role = 'Collaborateur'): bool
     {
         $stmt = $this->pdo->prepare(
             'INSERT IGNORE INTO participer (id_user, id_projet, date_participation, role_dans_projet)

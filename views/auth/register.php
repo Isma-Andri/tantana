@@ -6,7 +6,7 @@ require __DIR__ . '/../partials/header.php';
 
 <div class="min-h-screen flex">
 
-    <div class="hidden lg:flex lg:w-2/5 bg-jade flex-col justify-between p-12 relative overflow-hidden">
+    <div class="hidden lg:flex lg:w-2/5 bg-[#064e3b] flex-col justify-between p-12 relative overflow-hidden">
         <svg class="absolute inset-0 w-full h-full opacity-10" viewBox="0 0 400 800" fill="none">
             <?php foreach ([100,200,300,400,500,600] as $y): ?>
             <rect x="-60" y="<?= $y ?>" width="520" height="<?= $y % 200 === 0 ? 4 : 2 ?>" rx="2" fill="white" transform="rotate(-12 -60 <?= $y ?>)"/>
@@ -15,19 +15,16 @@ require __DIR__ . '/../partials/header.php';
 
         <div class="relative z-10">
             <a href="login" class="flex items-center gap-2">
-                <div class="w-10 h-10 rounded-xl bg-white/20 flex items-center justify-center">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" class="w-5 h-5">
-                        <path d="M9 3H5a2 2 0 0 0-2 2v4m6-6h10a2 2 0 0 1 2 2v4M9 3v18m0 0h10a2 2 0 0 0 2-2V9M9 21H5a2 2 0 0 1-2-2V9m0 0h18"/>
-                    </svg>
-                </div>
+                <img src="/img/diplomatic_seal.jpg" alt="Logo" class="w-10 h-10 rounded-full border-2 border-white/20">
                 <span class="font-display text-2xl font-bold text-white">Tantana</span>
             </a>
         </div>
 
-        <div class="relative z-10 space-y-8">
-            <h2 class="font-display text-4xl font-extrabold text-white leading-tight">
-                Rejoignez<br>votre équipe<br>aujourd'hui.
+        <div class="relative z-10 space-y-4">
+            <h2 class="font-display text-3xl font-bold text-white leading-tight">
+                Plateforme pour<br>les affaires<br>gouvernementales.
             </h2>
+            <img src="/img/diplomatic_building.jpg" alt="Palais Diplomatique" class="w-52 h-52 rounded-2xl border-4 border-white/20 shadow-lift float-slow object-cover my-4">
             <div class="space-y-4">
                 <?php
                 $features = [
@@ -98,7 +95,7 @@ require __DIR__ . '/../partials/header.php';
                             <div class="role-box border-2 rounded-xl p-3.5 transition-all duration-200 border-ink-100 hover:border-jade flex flex-col gap-1">
                                 <span class="text-sm font-semibold text-ink"><?= e($role['libelle']) ?></span>
                                 <span class="text-xs text-ink-500">
-                                    <?= $role['libelle'] === 'Chef de projet' ? 'Créer & gérer les projets' : 'Participer aux projets' ?>
+                                    <?= $role['libelle'] === 'Responsable de dossier' ? 'Créer & gérer les dossiers' : 'Participer aux dossiers' ?>
                                 </span>
                             </div>
                         </label>
