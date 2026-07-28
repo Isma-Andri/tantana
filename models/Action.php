@@ -33,7 +33,7 @@ class Action
     {
         $stmt = $this->db->prepare("
             SELECT t.*, s.libelle as statut_libelle, p.libelle as priorite_libelle,
-                   u.id_user, u.prenom, u.nom
+                   u.id_user, u.prenom as assigne_prenom, u.nom as assigne_nom
             FROM tache t
             JOIN statut s ON t.id_statut = s.id_statut
             JOIN priorite p ON t.id_priorite = p.id_priorite

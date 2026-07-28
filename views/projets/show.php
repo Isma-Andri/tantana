@@ -6,7 +6,8 @@ require __DIR__ . '/../partials/navbar.php';
 require __DIR__ . '/../partials/flash.php';
 
 $isOwner = ((int) $projet['cree_par'] === (int) $user['id']);
-$isChef  = $user['role'] === 'Responsable de dossier';
+$isAdmin = $user['role'] === 'Administrateur';
+$isChef  = $user['role'] === 'Responsable de dossier' || $isAdmin;
 
 $statutColors = [
     'En attente' => 'badge-gray',
@@ -253,7 +254,7 @@ if ($projet['date_debut'] && $projet['date_limite']) {
                     </ul>
                 <?php endif; ?>
 
-                <?php if ($_SESSION['user']['role'] === 'Responsable de dossier'): ?>
+                <?php if ($isChef): ?>
                     <form action="/projets/upload/<?= $projet['id_projet'] ?>" method="POST" enctype="multipart/form-data" class="flex items-center gap-2 mt-2">
                         <input type="file" name="fichier" class="text-sm text-ink-500 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-jade-50 file:text-jade hover:file:bg-jade-100" required>
                         <button type="submit" class="btn-primary text-xs py-2 px-3">Ajouter</button>
@@ -262,7 +263,7 @@ if ($projet['date_debut'] && $projet['date_limite']) {
             </div>
 
             <!-- Partage Sécurisé -->
-            <?php if ($_SESSION['user']['role'] === 'Responsable de dossier'): ?>
+            <?php if ($isChef): ?>
             <div class="bg-white rounded-2xl shadow-card p-5 mt-6 hover-lift">
                 <h2 class="text-sm font-semibold text-ink mb-4 uppercase tracking-wider">Partage sécurisé</h2>
                 
@@ -283,10 +284,10 @@ if ($projet['date_debut'] && $projet['date_limite']) {
                 <form action="/projets/share/<?= $projet['id_projet'] ?>" method="POST" class="space-y-3 mt-4 pt-4 border-t border-ink-100">
                     <div>
                         <label class="block text-xs font-medium text-ink-600 mb-1">Email du partenaire</label>
-                        <input type="email" name="email" class="input-field text-sm" placeholder="email@gov.mg" required>
+                        <input type="email" name="email" class="t-input text-sm" placeholder="email@gov.mg" required>
                     </div>
                     <div class="flex items-center gap-2">
-                        <select name="niveau_acces" class="input-field text-sm flex-1">
+                        <select name="niveau_acces" class="t-input text-sm flex-1">
                             <option value="Lecture">Lecture</option>
                             <option value="Modification">Modification</option>
                         </select>
