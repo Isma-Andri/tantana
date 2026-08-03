@@ -35,8 +35,8 @@ CREATE TABLE statut_workflow (
 
 INSERT INTO statut_workflow (libelle) VALUES ('Brouillon'), ('En révision'), ('Signé');
 
-CREATE TABLE projets (
-    id_projet    INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+CREATE TABLE dossiers (
+    id_dossier    INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
     nom          VARCHAR(255) NOT NULL,
     description  TEXT,
     date_creation DATE NOT NULL DEFAULT (CURRENT_DATE),
@@ -46,19 +46,19 @@ CREATE TABLE projets (
     id_statut    INT UNSIGNED NOT NULL DEFAULT 1,
     id_workflow  INT UNSIGNED NOT NULL DEFAULT 1,
     cree_par     INT UNSIGNED NOT NULL,
-    CONSTRAINT fk_projet_statut   FOREIGN KEY (id_statut) REFERENCES statut(id_statut) ON UPDATE CASCADE ON DELETE RESTRICT,
-    CONSTRAINT fk_projet_workflow FOREIGN KEY (id_workflow) REFERENCES statut_workflow(id_workflow) ON UPDATE CASCADE ON DELETE RESTRICT,
-    CONSTRAINT fk_projet_createur FOREIGN KEY (cree_par)  REFERENCES users(id_user)   ON UPDATE CASCADE ON DELETE RESTRICT
+    CONSTRAINT fk_dossier_statut   FOREIGN KEY (id_statut) REFERENCES statut(id_statut) ON UPDATE CASCADE ON DELETE RESTRICT,
+    CONSTRAINT fk_dossier_workflow FOREIGN KEY (id_workflow) REFERENCES statut_workflow(id_workflow) ON UPDATE CASCADE ON DELETE RESTRICT,
+    CONSTRAINT fk_dossier_createur FOREIGN KEY (cree_par)  REFERENCES users(id_user)   ON UPDATE CASCADE ON DELETE RESTRICT
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 CREATE TABLE participer (
     id_user           INT UNSIGNED NOT NULL,
-    id_projet         INT UNSIGNED NOT NULL,
+    id_dossier         INT UNSIGNED NOT NULL,
     date_participation DATE NOT NULL DEFAULT (CURRENT_DATE),
-    role_dans_projet  VARCHAR(100),
-    PRIMARY KEY (id_user, id_projet),
+    role_dans_dossier  VARCHAR(100),
+    PRIMARY KEY (id_user, id_dossier),
     CONSTRAINT fk_part_user   FOREIGN KEY (id_user)   REFERENCES users(id_user)     ON DELETE CASCADE,
-    CONSTRAINT fk_part_projet FOREIGN KEY (id_projet) REFERENCES projets(id_projet) ON DELETE CASCADE
+    CONSTRAINT fk_part_dossier FOREIGN KEY (id_dossier) REFERENCES dossiers(id_dossier) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 CREATE TABLE priorite (
@@ -78,10 +78,10 @@ CREATE TABLE tache (
     date_limite  DATE,
     id_statut    INT UNSIGNED NOT NULL DEFAULT 1,
     id_priorite  INT UNSIGNED NOT NULL DEFAULT 2,
-    id_projet    INT UNSIGNED NOT NULL,
+    id_dossier    INT UNSIGNED NOT NULL,
     CONSTRAINT fk_tache_statut   FOREIGN KEY (id_statut)   REFERENCES statut(id_statut)     ON UPDATE CASCADE,
     CONSTRAINT fk_tache_priorite FOREIGN KEY (id_priorite) REFERENCES priorite(id_priorite) ON UPDATE CASCADE,
-    CONSTRAINT fk_tache_projet   FOREIGN KEY (id_projet)   REFERENCES projets(id_projet)    ON DELETE CASCADE
+    CONSTRAINT fk_tache_dossier   FOREIGN KEY (id_dossier)   REFERENCES dossiers(id_dossier)    ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 CREATE TABLE affecter (
@@ -113,19 +113,19 @@ CREATE TABLE contenir (
 
 CREATE TABLE dossier_fichier (
     id_fichier INT UNSIGNED NOT NULL,
-    id_projet  INT UNSIGNED NOT NULL,
-    PRIMARY KEY (id_fichier, id_projet),
+    id_dossier  INT UNSIGNED NOT NULL,
+    PRIMARY KEY (id_fichier, id_dossier),
     CONSTRAINT fk_df_fich  FOREIGN KEY (id_fichier) REFERENCES fichier(id_fichier) ON DELETE CASCADE,
-    CONSTRAINT fk_df_projet FOREIGN KEY (id_projet) REFERENCES projets(id_projet) ON DELETE CASCADE
+    CONSTRAINT fk_df_dossier FOREIGN KEY (id_dossier) REFERENCES dossiers(id_dossier) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 CREATE TABLE partage_dossier (
-    id_projet INT UNSIGNED NOT NULL,
+    id_dossier INT UNSIGNED NOT NULL,
     id_user INT UNSIGNED NOT NULL,
     niveau_acces VARCHAR(50) DEFAULT 'Lecture',
     date_partage TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    PRIMARY KEY (id_projet, id_user),
-    CONSTRAINT fk_partage_projet FOREIGN KEY (id_projet) REFERENCES projets(id_projet) ON DELETE CASCADE,
+    PRIMARY KEY (id_dossier, id_user),
+    CONSTRAINT fk_partage_dossier FOREIGN KEY (id_dossier) REFERENCES dossiers(id_dossier) ON DELETE CASCADE,
     CONSTRAINT fk_partage_user FOREIGN KEY (id_user) REFERENCES users(id_user) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
@@ -151,9 +151,9 @@ CREATE TABLE commentaire (
     id_commentaire INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
     contenu TEXT NOT NULL,
     date_commentaire TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    id_projet INT UNSIGNED NOT NULL,
+    id_dossier INT UNSIGNED NOT NULL,
     id_user INT UNSIGNED NOT NULL,
-    CONSTRAINT fk_comm_projet FOREIGN KEY (id_projet) REFERENCES projets(id_projet) ON DELETE CASCADE,
+    CONSTRAINT fk_comm_dossier FOREIGN KEY (id_dossier) REFERENCES dossiers(id_dossier) ON DELETE CASCADE,
     CONSTRAINT fk_comm_user FOREIGN KEY (id_user) REFERENCES users(id_user) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
@@ -161,8 +161,8 @@ CREATE TABLE activity_log (
     id_log INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
     action VARCHAR(500) NOT NULL,
     date_action TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    id_projet INT UNSIGNED NOT NULL,
+    id_dossier INT UNSIGNED NOT NULL,
     id_user INT UNSIGNED NOT NULL,
-    CONSTRAINT fk_log_projet FOREIGN KEY (id_projet) REFERENCES projets(id_projet) ON DELETE CASCADE,
+    CONSTRAINT fk_log_dossier FOREIGN KEY (id_dossier) REFERENCES dossiers(id_dossier) ON DELETE CASCADE,
     CONSTRAINT fk_log_user FOREIGN KEY (id_user) REFERENCES users(id_user) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;

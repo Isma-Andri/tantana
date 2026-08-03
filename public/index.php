@@ -46,7 +46,7 @@ function requireRole(string ...$roles): void
     requireAuth();
     if (!in_array($_SESSION['user']['role'], $roles, true)) {
         setFlash('error', 'Accès refusé.');
-        redirect('projets');
+        redirect('dossiers');
     }
 }
 
@@ -69,7 +69,7 @@ $id   = isset($segments[2]) ? (int) $segments[2] : 0;
 
 // Landing page
 if ($seg0 === '') {
-    if (!empty($_SESSION['user'])) redirect('projets');
+    if (!empty($_SESSION['user'])) redirect('dossiers');
     require __DIR__ . '/../views/home.php';
     exit;
 }
@@ -101,10 +101,10 @@ if ($seg0 === 'admin') {
     exit;
 }
 
-// Projets
-if ($seg0 === 'projets') {
-    require_once __DIR__ . '/../controllers/ProjetController.php';
-    $ctrl = new ProjetController();
+// Dossiers
+if ($seg0 === 'dossiers') {
+    require_once __DIR__ . '/../controllers/DossierController.php';
+    $ctrl = new DossierController();
 
     match (true) {
         $seg1 === '' && $method === 'GET'                   => $ctrl->index(),

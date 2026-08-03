@@ -31,14 +31,14 @@ class Fichier
         return null;
     }
 
-    public function linkToDossier(int $idFichier, int $idProjet): bool
+    public function linkToDossier(int $idFichier, int $idDossier): bool
     {
         $stmt = $this->pdo->prepare(
-            'INSERT IGNORE INTO dossier_fichier (id_fichier, id_projet) VALUES (:id_fichier, :id_projet)'
+            'INSERT IGNORE INTO dossier_fichier (id_fichier, id_dossier) VALUES (:id_fichier, :id_dossier)'
         );
         return $stmt->execute([
             ':id_fichier' => $idFichier,
-            ':id_projet' => $idProjet
+            ':id_dossier' => $idDossier
         ]);
     }
 
@@ -53,17 +53,17 @@ class Fichier
         ]);
     }
 
-    public function getFichiersByDossier(int $idProjet): array
+    public function getFichiersByDossier(int $idDossier): array
     {
         $stmt = $this->pdo->prepare(
             'SELECT f.*, u.nom AS auteur_nom, u.prenom AS auteur_prenom 
              FROM fichier f
              JOIN dossier_fichier df ON f.id_fichier = df.id_fichier
              JOIN users u ON f.ajoute_par = u.id_user
-             WHERE df.id_projet = :id_projet
+             WHERE df.id_dossier = :id_dossier
              ORDER BY f.date_ajout DESC'
         );
-        $stmt->execute([':id_projet' => $idProjet]);
+        $stmt->execute([':id_dossier' => $idDossier]);
         return $stmt->fetchAll();
     }
 

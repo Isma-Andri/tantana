@@ -1,15 +1,15 @@
 <?php
-// views/projets/index.php
-$pageTitle = 'Mes Projets';
+// views/dossiers/index.php
+$pageTitle = 'Mes Dossiers';
 require __DIR__ . '/../partials/header.php';
 require __DIR__ . '/../partials/navbar.php';
 require __DIR__ . '/../partials/flash.php';
 
 $user    = $_SESSION['user'];
 $isChef  = $user['role'] === 'Responsable de dossier';
-$total   = count($projets);
-$enCours = count(array_filter($projets, fn($p) => $p['statut_libelle'] === 'En cours'));
-$termines = count(array_filter($projets, fn($p) => $p['statut_libelle'] === 'Terminé'));
+$total   = count($dossiers);
+$enCours = count(array_filter($dossiers, fn($p) => $p['statut_libelle'] === 'En cours'));
+$termines = count(array_filter($dossiers, fn($p) => $p['statut_libelle'] === 'Terminé'));
 
 $statutColors = [
     'En attente' => 'badge-gray',
@@ -44,7 +44,7 @@ function urgencyClass(?string $dateLimit): string
             </p>
             <?php if ($isChef): ?>
             <div class="pt-2">
-                <a href="/projets/create" class="btn-primary text-xs py-2 px-4">
+                <a href="/dossiers/create" class="btn-primary text-xs py-2 px-4">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" class="w-3.5 h-3.5"><path d="M12 5v14M5 12h14"/></svg>
                     Nouveau dossier
                 </a>
@@ -77,8 +77,8 @@ function urgencyClass(?string $dateLimit): string
         <?php endforeach; ?>
     </div>
 
-    <!-- Liste des projets -->
-    <?php if (empty($projets)): ?>
+    <!-- Liste des dossiers -->
+    <?php if (empty($dossiers)): ?>
     <div class="bg-white rounded-2xl shadow-card p-12 text-center max-w-lg mx-auto">
         <img src="/img/diplomatic_desk.jpg" alt="Aucun dossier" class="w-36 h-36 rounded-2xl border-2 border-slate-100 shadow-sm mx-auto mb-6 object-cover float-slow">
         <h3 class="font-display font-bold text-xl text-slate-900 mb-1">Aucun dossier de politique</h3>
@@ -86,13 +86,13 @@ function urgencyClass(?string $dateLimit): string
             <?= $isChef ? 'Commencez par créer votre premier dossier de politique.' : 'Vous n\'avez été ajouté à aucun dossier pour l\'instant.' ?>
         </p>
         <?php if ($isChef): ?>
-        <a href="/projets/create" class="btn-jade">Créer un dossier</a>
+        <a href="/dossiers/create" class="btn-jade">Créer un dossier</a>
         <?php endif; ?>
     </div>
 
     <?php else: ?>
     <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5">
-        <?php foreach ($projets as $p):
+        <?php foreach ($dossiers as $p):
             $badgeClass = $statutColors[$p['statut_libelle']] ?? 'badge-gray';
             $isOwner    = ((int) $p['cree_par'] === (int) $user['id']);
         ?>
@@ -126,17 +126,17 @@ function urgencyClass(?string $dateLimit): string
                 </div>
 
                 <div class="flex items-center gap-2 pt-4 border-t border-ink-100">
-                    <a href="/projets/show/<?= $p['id_projet'] ?>" class="btn-ghost text-xs flex-1 justify-center py-2">
+                    <a href="/dossiers/show/<?= $p['id_dossier'] ?>" class="btn-ghost text-xs flex-1 justify-center py-2">
                         Voir le détail
                     </a>
                     <?php if ($isOwner && $isChef): ?>
-                    <a href="/projets/edit/<?= $p['id_projet'] ?>"
+                    <a href="/dossiers/edit/<?= $p['id_dossier'] ?>"
                        class="w-8 h-8 flex items-center justify-center rounded-lg text-ink-500 hover:bg-ink-100 transition-colors" title="Modifier">
                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="w-4 h-4">
                             <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
                         </svg>
                     </a>
-                    <form action="/projets/delete/<?= $p['id_projet'] ?>" method="POST"
+                    <form action="/dossiers/delete/<?= $p['id_dossier'] ?>" method="POST"
                           onsubmit="return confirm('Supprimer « <?= e(addslashes($p['nom'])) ?> » ?')">
                         <button type="submit"
                                 class="w-8 h-8 flex items-center justify-center rounded-lg text-rose hover:bg-rose-light transition-colors" title="Supprimer">

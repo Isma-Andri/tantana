@@ -1,6 +1,6 @@
 <?php
-// views/projets/create.php
-$pageTitle = 'Nouveau projet';
+// views/dossiers/create.php
+$pageTitle = 'Nouveau dossier';
 require __DIR__ . '/../partials/header.php';
 require __DIR__ . '/../partials/navbar.php';
 require __DIR__ . '/../partials/flash.php';
@@ -9,7 +9,7 @@ require __DIR__ . '/../partials/flash.php';
 <main class="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8 py-10 page-in">
 
     <nav class="flex items-center gap-2 text-sm text-ink-500 mb-8">
-        <a href="/projets" class="hover:text-ink transition-colors">Projets</a>
+        <a href="/dossiers" class="hover:text-ink transition-colors">Dossiers</a>
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="w-3 h-3"><path d="M9 18l6-6-6-6"/></svg>
         <span class="text-ink font-medium">Nouveau dossier</span>
     </nav>
@@ -23,7 +23,7 @@ require __DIR__ . '/../partials/flash.php';
             <img src="/img/signed_treaty.jpg" alt="Traité" class="w-16 h-16 rounded-xl object-cover border-2 border-white/20 shadow-sm flex-shrink-0 hidden sm:block">
         </div>
 
-        <form action="/projets/create" method="POST" class="p-8 space-y-6" novalidate>
+        <form action="/dossiers/create" method="POST" class="p-8 space-y-6" novalidate>
             <div>
                 <label class="block text-sm font-semibold text-ink mb-1.5" for="nom">
                     Nom du dossier <span class="text-rose">*</span>
@@ -37,7 +37,7 @@ require __DIR__ . '/../partials/flash.php';
             <div>
                 <label class="block text-sm font-semibold text-ink mb-1.5" for="description">Description</label>
                 <textarea id="description" name="description" rows="4" class="t-input resize-none"
-                          placeholder="Décrivez les objectifs et le contexte du projet…"
+                          placeholder="Décrivez les objectifs et le contexte du dossier…"
                           maxlength="2000"><?= e($_POST['description'] ?? '') ?></textarea>
                 <p class="text-xs text-ink-500 mt-1">Optionnel, max 2000 caractères</p>
             </div>
@@ -66,7 +66,7 @@ require __DIR__ . '/../partials/flash.php';
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" class="w-4 h-4"><path d="M12 5v14M5 12h14"/></svg>
                     Créer le dossier
                 </button>
-                <a href="/projets" class="btn-ghost">Annuler</a>
+                <a href="/dossiers" class="btn-ghost">Annuler</a>
             </div>
         </form>
     </div>

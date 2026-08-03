@@ -13,8 +13,8 @@ class Action
     public function create(array $data): int
     {
         $stmt = $this->db->prepare("
-            INSERT INTO tache (nom, description, date_debut, date_fin, date_limite, id_statut, id_priorite, id_projet)
-            VALUES (:nom, :description, :date_debut, :date_fin, :date_limite, :id_statut, :id_priorite, :id_projet)
+            INSERT INTO tache (nom, description, date_debut, date_fin, date_limite, id_statut, id_priorite, id_dossier)
+            VALUES (:nom, :description, :date_debut, :date_fin, :date_limite, :id_statut, :id_priorite, :id_dossier)
         ");
         $stmt->execute([
             'nom'         => $data['nom'],
@@ -24,12 +24,12 @@ class Action
             'date_limite' => $data['date_limite'] ?? null,
             'id_statut'   => $data['id_statut'] ?? 1,
             'id_priorite' => $data['id_priorite'] ?? 2,
-            'id_projet'   => $data['id_projet'],
+            'id_dossier'   => $data['id_dossier'],
         ]);
         return (int) $this->db->lastInsertId();
     }
 
-    public function getByDossier(int $idProjet): array
+    public function getByDossier(int $idDossier): array
     {
         $stmt = $this->db->prepare("
             SELECT t.*, s.libelle as statut_libelle, p.libelle as priorite_libelle,
@@ -39,10 +39,10 @@ class Action
             JOIN priorite p ON t.id_priorite = p.id_priorite
             LEFT JOIN affecter a ON t.id_tache = a.id_tache
             LEFT JOIN users u ON a.id_user = u.id_user
-            WHERE t.id_projet = :projet
+            WHERE t.id_dossier = :dossier
             ORDER BY t.date_creation DESC
         ");
-        $stmt->execute(['projet' => $idProjet]);
+        $stmt->execute(['dossier' => $idDossier]);
         return $stmt->fetchAll();
     }
 

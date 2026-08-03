@@ -1,9 +1,9 @@
 <?php
-// models/Projet.php
+// models/Dossier.php
 
 require_once __DIR__ . '/../config/database.php';
 
-class Projet
+class Dossier
 {
     private PDO $pdo;
 
@@ -15,7 +15,7 @@ class Projet
     public function create(array $data): int
     {
         $stmt = $this->pdo->prepare(
-            'INSERT INTO projets (nom, description, date_creation, date_debut, date_fin, date_limite, id_statut, id_workflow, cree_par)
+            'INSERT INTO dossiers (nom, description, date_creation, date_debut, date_fin, date_limite, id_statut, id_workflow, cree_par)
              VALUES (:nom, :description, CURRENT_DATE, :date_debut, :date_fin, :date_limite, 1, :id_workflow, :cree_par)'
         );
         $stmt->execute([
@@ -40,8 +40,8 @@ class Projet
             $stmt = $this->pdo->query(
                 'SELECT p.*, s.libelle AS statut_libelle, sw.libelle AS workflow_libelle,
                         u.nom AS createur_nom, u.prenom AS createur_prenom,
-                        (SELECT COUNT(*) FROM participer WHERE id_projet = p.id_projet) AS nb_membres
-                 FROM projets p
+                        (SELECT COUNT(*) FROM participer WHERE id_dossier = p.id_dossier) AS nb_membres
+                 FROM dossiers p
                  JOIN statut s ON p.id_statut = s.id_statut
                  JOIN statut_workflow sw ON p.id_workflow = sw.id_workflow
                  JOIN users  u ON p.cree_par  = u.id_user
@@ -50,17 +50,17 @@ class Projet
             return $stmt->fetchAll();
         }
 
-        // Responsable de dossier : ses projets + ceux où il participe
+        // Responsable de dossier : ses dossiers + ceux où il participe
         if ($role === 'Responsable de dossier') {
             $stmt = $this->pdo->prepare(
                 'SELECT DISTINCT p.*, s.libelle AS statut_libelle, sw.libelle AS workflow_libelle,
                         u.nom AS createur_nom, u.prenom AS createur_prenom,
-                        (SELECT COUNT(*) FROM participer WHERE id_projet = p.id_projet) AS nb_membres
-                 FROM projets p
+                        (SELECT COUNT(*) FROM participer WHERE id_dossier = p.id_dossier) AS nb_membres
+                 FROM dossiers p
                  JOIN statut s ON p.id_statut = s.id_statut
                  JOIN statut_workflow sw ON p.id_workflow = sw.id_workflow
                  JOIN users  u ON p.cree_par  = u.id_user
-                 LEFT JOIN participer pa ON pa.id_projet = p.id_projet AND pa.id_user = :uid
+                 LEFT JOIN participer pa ON pa.id_dossier = p.id_dossier AND pa.id_user = :uid
                  WHERE p.cree_par = :uid2 OR pa.id_user = :uid3
                  ORDER BY p.date_creation DESC'
             );
@@ -69,12 +69,12 @@ class Projet
             $stmt = $this->pdo->prepare(
                 'SELECT p.*, s.libelle AS statut_libelle, sw.libelle AS workflow_libelle,
                         u.nom AS createur_nom, u.prenom AS createur_prenom,
-                        (SELECT COUNT(*) FROM participer WHERE id_projet = p.id_projet) AS nb_membres
-                 FROM projets p
+                        (SELECT COUNT(*) FROM participer WHERE id_dossier = p.id_dossier) AS nb_membres
+                 FROM dossiers p
                  JOIN statut     s  ON p.id_statut = s.id_statut
                  JOIN statut_workflow sw ON p.id_workflow = sw.id_workflow
                  JOIN users      u  ON p.cree_par  = u.id_user
-                 JOIN participer pa ON pa.id_projet = p.id_projet AND pa.id_user = :uid
+                 JOIN participer pa ON pa.id_dossier = p.id_dossier AND pa.id_user = :uid
                  ORDER BY p.date_creation DESC'
             );
             $stmt->execute([':uid' => $userId]);
@@ -88,11 +88,11 @@ class Projet
         $stmt = $this->pdo->prepare(
             'SELECT p.*, s.libelle AS statut_libelle, sw.libelle AS workflow_libelle,
                     u.nom AS createur_nom, u.prenom AS createur_prenom
-             FROM projets p
+             FROM dossiers p
              JOIN statut s ON p.id_statut = s.id_statut
              JOIN statut_workflow sw ON p.id_workflow = sw.id_workflow
              JOIN users  u ON p.cree_par  = u.id_user
-             WHERE p.id_projet = :id LIMIT 1'
+             WHERE p.id_dossier = :id LIMIT 1'
         );
         $stmt->execute([':id' => $id]);
 
@@ -101,10 +101,10 @@ class Projet
 
     public function update(int $id, array $data, int $userId, bool $isAdmin = false): bool
     {
-        $sql = 'UPDATE projets
+        $sql = 'UPDATE dossiers
              SET nom = :nom, description = :description, date_debut = :date_debut,
                  date_fin = :date_fin, date_limite = :date_limite, id_statut = :id_statut, id_workflow = :id_workflow
-             WHERE id_projet = :id';
+             WHERE id_dossier = :id';
         if (!$isAdmin) {
             $sql .= ' AND cree_par = :cree_par';
         }
@@ -129,7 +129,7 @@ class Projet
 
     public function delete(int $id, int $userId, bool $isAdmin = false): bool
     {
-        $sql = 'DELETE FROM projets WHERE id_projet = :id';
+        $sql = 'DELETE FROM dossiers WHERE id_dossier = :id';
         if (!$isAdmin) {
             $sql .= ' AND cree_par = :cree_par';
         }
@@ -143,24 +143,24 @@ class Projet
         return $stmt->execute($params);
     }
 
-    public function addMember(int $projetId, int $userId, string $role = 'Collaborateur'): bool
+    public function addMember(int $dossierId, int $userId, string $role = 'Collaborateur'): bool
     {
         $stmt = $this->pdo->prepare(
-            'INSERT IGNORE INTO participer (id_user, id_projet, date_participation, role_dans_projet)
+            'INSERT IGNORE INTO participer (id_user, id_dossier, date_participation, role_dans_dossier)
              VALUES (:uid, :pid, CURRENT_DATE, :role)'
         );
 
-        return $stmt->execute([':uid' => $userId, ':pid' => $projetId, ':role' => $role]);
+        return $stmt->execute([':uid' => $userId, ':pid' => $dossierId, ':role' => $role]);
     }
 
-    public function getMembers(int $projetId): array
+    public function getMembers(int $dossierId): array
     {
         $stmt = $this->pdo->prepare(
-            'SELECT u.id_user, u.nom, u.prenom, u.email, pa.role_dans_projet, pa.date_participation
+            'SELECT u.id_user, u.nom, u.prenom, u.email, pa.role_dans_dossier, pa.date_participation
              FROM participer pa JOIN users u ON pa.id_user = u.id_user
-             WHERE pa.id_projet = :pid ORDER BY pa.date_participation'
+             WHERE pa.id_dossier = :pid ORDER BY pa.date_participation'
         );
-        $stmt->execute([':pid' => $projetId]);
+        $stmt->execute([':pid' => $dossierId]);
 
         return $stmt->fetchAll();
     }

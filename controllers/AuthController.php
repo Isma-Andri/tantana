@@ -14,7 +14,7 @@ class AuthController
 
     public function showLogin(): void
     {
-        if (!empty($_SESSION['user'])) redirect('projets');
+        if (!empty($_SESSION['user'])) redirect('dossiers');
         require __DIR__ . '/../views/auth/login.php';
     }
 
@@ -45,12 +45,12 @@ class AuthController
         ];
 
         setFlash('success', 'Bienvenue, ' . htmlspecialchars($user['prenom']) . ' !');
-        redirect('projets');
+        redirect('dossiers');
     }
 
     public function showRegister(): void
     {
-        if (!empty($_SESSION['user'])) redirect('projets');
+        if (!empty($_SESSION['user'])) redirect('dossiers');
         $roles = $this->userModel->getRoles();
         require __DIR__ . '/../views/auth/register.php';
     }

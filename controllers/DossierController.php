@@ -1,7 +1,7 @@
 <?php
-// controllers/ProjetController.php
+// controllers/DossierController.php
 
-require_once __DIR__ . '/../models/Projet.php';
+require_once __DIR__ . '/../models/Dossier.php';
 require_once __DIR__ . '/../models/Workflow.php';
 require_once __DIR__ . '/../models/PartageDossier.php';
 require_once __DIR__ . '/../models/Fichier.php';
@@ -10,28 +10,28 @@ require_once __DIR__ . '/../models/Commentaire.php';
 require_once __DIR__ . '/../models/ActivityLog.php';
 require_once __DIR__ . '/../models/Action.php';
 
-class ProjetController
+class DossierController
 {
-    private Projet $projetModel;
+    private Dossier $dossierModel;
 
     public function __construct()
     {
         requireAuth();
-        $this->projetModel = new Projet();
+        $this->dossierModel = new Dossier();
     }
 
     public function index(): void
     {
         $user    = $_SESSION['user'];
-        $projets = $this->projetModel->getAllForUser($user['id'], $user['role']);
-        require __DIR__ . '/../views/projets/index.php';
+        $dossiers = $this->dossierModel->getAllForUser($user['id'], $user['role']);
+        require __DIR__ . '/../views/dossiers/index.php';
     }
 
     public function create(): void
     {
         requireRole('Responsable de dossier', 'Administrateur');
-        $statuts = $this->projetModel->getStatuts();
-        require __DIR__ . '/../views/projets/create.php';
+        $statuts = $this->dossierModel->getStatuts();
+        require __DIR__ . '/../views/dossiers/create.php';
     }
 
     public function store(): void
@@ -39,11 +39,11 @@ class ProjetController
         requireRole('Responsable de dossier', 'Administrateur');
 
         if (empty(trim($_POST['nom'] ?? ''))) {
-            setFlash('error', 'Le nom du projet est obligatoire.');
-            redirect('projets/create');
+            setFlash('error', 'Le nom du dossier est obligatoire.');
+            redirect('dossiers/create');
         }
 
-        $id = $this->projetModel->create([
+        $id = $this->dossierModel->create([
             'nom'         => $_POST['nom'],
             'description' => $_POST['description'] ?? '',
             'date_debut'  => $_POST['date_debut']  ?? '',
@@ -52,37 +52,37 @@ class ProjetController
             'cree_par'    => $_SESSION['user']['id'],
         ]);
 
-        setFlash('success', 'Projet créé avec succès !');
-        redirect('projets/show/' . $id);
+        setFlash('success', 'Dossier créé avec succès !');
+        redirect('dossiers/show/' . $id);
     }
 
     public function show(int $id): void
     {
-        $projet  = $this->findOrFail($id);
-        $membres = $this->projetModel->getMembers($id);
+        $dossier  = $this->findOrFail($id);
+        $membres = $this->dossierModel->getMembers($id);
         $partages = (new PartageDossier())->getPartagesByDossier($id);
         $fichiers = (new Fichier())->getFichiersByDossier($id);
         $commentaires = (new Commentaire())->getByDossier($id);
         $activityLogs = (new ActivityLog())->getByDossier($id);
         $actions = (new Action())->getByDossier($id);
         $user    = $_SESSION['user'];
-        require __DIR__ . '/../views/projets/show.php';
+        require __DIR__ . '/../views/dossiers/show.php';
     }
 
     public function edit(int $id): void
     {
         requireRole('Responsable de dossier', 'Administrateur');
-        $projet  = $this->findOrFail($id);
-        $statuts = $this->projetModel->getStatuts();
+        $dossier  = $this->findOrFail($id);
+        $statuts = $this->dossierModel->getStatuts();
         $workflows = (new Workflow())->getAllStatuts();
 
         $isAdmin = $_SESSION['user']['role'] === 'Administrateur';
-        if ((int) $projet['cree_par'] !== $_SESSION['user']['id'] && !$isAdmin) {
+        if ((int) $dossier['cree_par'] !== $_SESSION['user']['id'] && !$isAdmin) {
             setFlash('error', 'Vous n\'êtes pas autorisé à modifier ce dossier.');
-            redirect('projets');
+            redirect('dossiers');
         }
 
-        require __DIR__ . '/../views/projets/edit.php';
+        require __DIR__ . '/../views/dossiers/edit.php';
     }
 
     public function update(int $id): void
@@ -90,12 +90,12 @@ class ProjetController
         requireRole('Responsable de dossier', 'Administrateur');
 
         if (empty(trim($_POST['nom'] ?? ''))) {
-            setFlash('error', 'Le nom du projet est obligatoire.');
-            redirect('projets/edit/' . $id);
+            setFlash('error', 'Le nom du dossier est obligatoire.');
+            redirect('dossiers/edit/' . $id);
         }
 
         $isAdmin = $_SESSION['user']['role'] === 'Administrateur';
-        $ok = $this->projetModel->update($id, [
+        $ok = $this->dossierModel->update($id, [
             'nom'         => $_POST['nom'],
             'description' => $_POST['description'] ?? '',
             'date_debut'  => $_POST['date_debut']  ?? '',
@@ -107,11 +107,11 @@ class ProjetController
 
         if (!$ok) {
             setFlash('error', 'Modification impossible.');
-            redirect('projets');
+            redirect('dossiers');
         }
 
-        setFlash('success', 'Projet mis à jour avec succès !');
-        redirect('projets/show/' . $id);
+        setFlash('success', 'Dossier mis à jour avec succès !');
+        redirect('dossiers/show/' . $id);
     }
 
     public function delete(int $id): void
@@ -119,19 +119,19 @@ class ProjetController
         requireRole('Responsable de dossier', 'Administrateur');
 
         $isAdmin = $_SESSION['user']['role'] === 'Administrateur';
-        $ok = $this->projetModel->delete($id, $_SESSION['user']['id'], $isAdmin);
-        setFlash($ok ? 'success' : 'error', $ok ? 'Projet supprimé.' : 'Suppression impossible.');
-        redirect('projets');
+        $ok = $this->dossierModel->delete($id, $_SESSION['user']['id'], $isAdmin);
+        setFlash($ok ? 'success' : 'error', $ok ? 'Dossier supprimé.' : 'Suppression impossible.');
+        redirect('dossiers');
     }
 
     private function findOrFail(int $id): array
     {
-        $projet = $this->projetModel->findById($id);
-        if (!$projet) {
+        $dossier = $this->dossierModel->findById($id);
+        if (!$dossier) {
             setFlash('error', 'Dossier introuvable.');
-            redirect('projets');
+            redirect('dossiers');
         }
-        return $projet;
+        return $dossier;
     }
 
     public function upload(int $id): void
@@ -165,7 +165,7 @@ class ProjetController
         } else {
             setFlash('error', 'Erreur de téléchargement du fichier.');
         }
-        redirect('projets/show/' . $id);
+        redirect('dossiers/show/' . $id);
     }
 
     public function share(int $id): void
@@ -185,15 +185,15 @@ class ProjetController
         } else {
             setFlash('error', 'Utilisateur introuvable.');
         }
-        redirect('projets/show/' . $id);
+        redirect('dossiers/show/' . $id);
     }
 
     public function exportPdf(int $id): void
     {
-        $projet = $this->findOrFail($id);
-        $membres = $this->projetModel->getMembers($id);
+        $dossier = $this->findOrFail($id);
+        $membres = $this->dossierModel->getMembers($id);
         $fichiers = (new Fichier())->getFichiersByDossier($id);
-        require __DIR__ . '/../views/projets/pdf.php';
+        require __DIR__ . '/../views/dossiers/pdf.php';
     }
 
     public function comment(int $id): void
@@ -204,14 +204,14 @@ class ProjetController
         $contenu = trim($_POST['contenu'] ?? '');
         if (empty($contenu)) {
             setFlash('error', 'Le commentaire ne peut pas être vide.');
-            redirect('projets/show/' . $id);
+            redirect('dossiers/show/' . $id);
         }
 
         (new Commentaire())->add($id, $_SESSION['user']['id'], $contenu);
         (new ActivityLog())->log($id, $_SESSION['user']['id'], 'A ajouté un commentaire');
 
         setFlash('success', 'Commentaire ajouté.');
-        redirect('projets/show/' . $id);
+        redirect('dossiers/show/' . $id);
     }
 
     public function addAction(int $id): void
@@ -222,10 +222,10 @@ class ProjetController
         $nom = trim($_POST['nom'] ?? '');
         if (empty($nom)) {
             setFlash('error', 'Le nom de l\'action est obligatoire.');
-            redirect('projets/show/' . $id);
+            redirect('dossiers/show/' . $id);
         }
 
-        $_POST['id_projet'] = $id;
+        $_POST['id_dossier'] = $id;
         $actionModel = new Action();
         $idTache = $actionModel->create($_POST);
 
@@ -236,7 +236,7 @@ class ProjetController
         (new ActivityLog())->log($id, $_SESSION['user']['id'], 'A créé une nouvelle action: ' . $nom);
 
         setFlash('success', 'Action ajoutée.');
-        redirect('projets/show/' . $id);
+        redirect('dossiers/show/' . $id);
     }
 
     public function updateAction(int $id): void
@@ -255,6 +255,6 @@ class ProjetController
             setFlash('error', 'Données invalides.');
         }
 
-        redirect('projets/show/' . $id);
+        redirect('dossiers/show/' . $id);
     }
 }

@@ -12,7 +12,7 @@ $isAdmin  = $user['role'] === 'Administrateur';
     <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
         <div class="flex items-center justify-between h-16">
 
-            <a href="/projets" class="flex items-center gap-2 group">
+            <a href="/dossiers" class="flex items-center gap-2 group">
                 <div class="w-8 h-8 rounded-lg bg-[#064e3b] flex items-center justify-center">
                     <svg viewBox="0 0 24 24" fill="none" class="w-4 h-4 text-white" stroke="currentColor" stroke-width="2.5">
                         <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
@@ -23,11 +23,11 @@ $isAdmin  = $user['role'] === 'Administrateur';
             </a>
 
             <div class="hidden md:flex items-center gap-1">
-                <a href="/projets" class="px-4 py-2 rounded-lg text-sm font-medium text-slate-600 hover:text-slate-900 hover:bg-slate-100 transition-colors">
+                <a href="/dossiers" class="px-4 py-2 rounded-lg text-sm font-medium text-slate-600 hover:text-slate-900 hover:bg-slate-100 transition-colors">
                     Dossiers
                 </a>
                 <?php if ($isChef || $isAdmin): ?>
-                <a href="/projets/create" class="px-4 py-2 rounded-lg text-sm font-medium text-[#064e3b] bg-emerald-50 hover:bg-emerald-100 transition-colors">
+                <a href="/dossiers/create" class="px-4 py-2 rounded-lg text-sm font-medium text-[#064e3b] bg-emerald-50 hover:bg-emerald-100 transition-colors">
                     + Nouveau dossier
                 </a>
                 <?php endif; ?>

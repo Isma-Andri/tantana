@@ -12,46 +12,46 @@ class PartageDossier
         $this->pdo = getPDO();
     }
 
-    public function addPartage(int $idProjet, int $idUser, string $niveauAcces = 'Lecture'): bool
+    public function addPartage(int $idDossier, int $idUser, string $niveauAcces = 'Lecture'): bool
     {
         $stmt = $this->pdo->prepare(
-            'INSERT IGNORE INTO partage_dossier (id_projet, id_user, niveau_acces)
-             VALUES (:id_projet, :id_user, :niveau_acces)'
+            'INSERT IGNORE INTO partage_dossier (id_dossier, id_user, niveau_acces)
+             VALUES (:id_dossier, :id_user, :niveau_acces)'
         );
         return $stmt->execute([
-            ':id_projet' => $idProjet,
+            ':id_dossier' => $idDossier,
             ':id_user' => $idUser,
             ':niveau_acces' => $niveauAcces
         ]);
     }
 
-    public function removePartage(int $idProjet, int $idUser): bool
+    public function removePartage(int $idDossier, int $idUser): bool
     {
-        $stmt = $this->pdo->prepare('DELETE FROM partage_dossier WHERE id_projet = :id_projet AND id_user = :id_user');
+        $stmt = $this->pdo->prepare('DELETE FROM partage_dossier WHERE id_dossier = :id_dossier AND id_user = :id_user');
         return $stmt->execute([
-            ':id_projet' => $idProjet,
+            ':id_dossier' => $idDossier,
             ':id_user' => $idUser
         ]);
     }
 
-    public function getPartagesByDossier(int $idProjet): array
+    public function getPartagesByDossier(int $idDossier): array
     {
         $stmt = $this->pdo->prepare(
             'SELECT pd.*, u.nom, u.prenom, u.email 
              FROM partage_dossier pd
              JOIN users u ON pd.id_user = u.id_user
-             WHERE pd.id_projet = :id_projet'
+             WHERE pd.id_dossier = :id_dossier'
         );
-        $stmt->execute([':id_projet' => $idProjet]);
+        $stmt->execute([':id_dossier' => $idDossier]);
         return $stmt->fetchAll();
     }
 
     public function getPartagesByUser(int $idUser): array
     {
         $stmt = $this->pdo->prepare(
-            'SELECT pd.*, p.nom AS projet_nom, p.description
+            'SELECT pd.*, p.nom AS dossier_nom, p.description
              FROM partage_dossier pd
-             JOIN projets p ON pd.id_projet = p.id_projet
+             JOIN dossiers p ON pd.id_dossier = p.id_dossier
              WHERE pd.id_user = :id_user'
         );
         $stmt->execute([':id_user' => $idUser]);

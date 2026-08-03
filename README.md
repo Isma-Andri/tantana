@@ -68,7 +68,7 @@ Tantana est une application web de gestion de dossiers diplomatiques. Elle centr
 
    Aller sur `http://localhost:5000` dans votre navigateur.
 
-## Structure du projet
+## Structure du dossier
 
 ```
 tantana/
@@ -81,7 +81,7 @@ tantana/
 │   ├── admin/       # Panneau d'administration
 │   ├── auth/        # Connexion, inscription
 │   ├── partials/    # En-tête, pied de page, barre de navigation
-│   └── projets/     # Vues des dossiers
+│   └── dossiers/     # Vues des dossiers
 ├── docs/            # Changelog et documentation
 └── tantana_new.sql  # Schéma de la base de données
 ```

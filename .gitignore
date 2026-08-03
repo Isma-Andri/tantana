@@ -1,3 +1,6 @@
 .env
 hihi.txt
 docs/TECHNICAL_GUIDE.md
+migrate_to_dossier.sh
+migrate_to_dossier.sql
+contexte_tantana.md

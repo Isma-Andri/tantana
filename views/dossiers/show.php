@@ -1,11 +1,11 @@
 <?php
-// views/projets/show.php
-$pageTitle = $projet['nom'];
+// views/dossiers/show.php
+$pageTitle = $dossier['nom'];
 require __DIR__ . '/../partials/header.php';
 require __DIR__ . '/../partials/navbar.php';
 require __DIR__ . '/../partials/flash.php';
 
-$isOwner = ((int) $projet['cree_par'] === (int) $user['id']);
+$isOwner = ((int) $dossier['cree_par'] === (int) $user['id']);
 $isAdmin = $user['role'] === 'Administrateur';
 $isChef  = $user['role'] === 'Responsable de dossier' || $isAdmin;
 
@@ -23,10 +23,10 @@ function fmtDate(?string $d): string
 
 // Progression temporelle en pourcentage
 $progress = 0;
-if ($projet['date_debut'] && $projet['date_limite']) {
-    $total = strtotime($projet['date_limite']) - strtotime($projet['date_debut']);
+if ($dossier['date_debut'] && $dossier['date_limite']) {
+    $total = strtotime($dossier['date_limite']) - strtotime($dossier['date_debut']);
     if ($total > 0) {
-        $progress = max(0, min(100, (int) round((time() - strtotime($projet['date_debut'])) / $total * 100)));
+        $progress = max(0, min(100, (int) round((time() - strtotime($dossier['date_debut'])) / $total * 100)));
     }
 }
 ?>
@@ -34,9 +34,9 @@ if ($projet['date_debut'] && $projet['date_limite']) {
 <main class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-10 page-in">
 
     <nav class="flex items-center gap-2 text-sm text-ink-500 mb-8">
-        <a href="/projets" class="hover:text-ink transition-colors">Dossiers</a>
+        <a href="/dossiers" class="hover:text-ink transition-colors">Dossiers</a>
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="w-3 h-3"><path d="M9 18l6-6-6-6"/></svg>
-        <span class="text-ink font-medium"><?= e($projet['nom']) ?></span>
+        <span class="text-ink font-medium"><?= e($dossier['nom']) ?></span>
     </nav>
 
     <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -47,14 +47,14 @@ if ($projet['date_debut'] && $projet['date_limite']) {
                 <div class="h-2 bg-[#064e3b]"></div>
                 <div class="p-7">
                     <div class="flex items-start justify-between gap-4 mb-5">
-                        <h1 class="font-display text-2xl font-extrabold text-ink leading-tight"><?= e($projet['nom']) ?></h1>
-                        <span class="badge <?= $statutColors[$projet['statut_libelle']] ?? 'badge-gray' ?> flex-shrink-0">
-                            <?= e($projet['statut_libelle']) ?>
+                        <h1 class="font-display text-2xl font-extrabold text-ink leading-tight"><?= e($dossier['nom']) ?></h1>
+                        <span class="badge <?= $statutColors[$dossier['statut_libelle']] ?? 'badge-gray' ?> flex-shrink-0">
+                            <?= e($dossier['statut_libelle']) ?>
                         </span>
                     </div>
 
-                    <?php if ($projet['description']): ?>
-                    <p class="text-ink-500 text-sm leading-relaxed mb-6"><?= nl2br(e($projet['description'])) ?></p>
+                    <?php if ($dossier['description']): ?>
+                    <p class="text-ink-500 text-sm leading-relaxed mb-6"><?= nl2br(e($dossier['description'])) ?></p>
                     <?php else: ?>
                     <p class="text-ink-200 text-sm italic mb-6">Aucune description.</p>
                     <?php endif; ?>
@@ -74,10 +74,10 @@ if ($projet['date_debut'] && $projet['date_limite']) {
                     <div class="grid grid-cols-2 sm:grid-cols-4 gap-4">
                         <?php
                         $dates = [
-                            ['Création',   $projet['date_creation']],
-                            ['Début',      $projet['date_debut']],
-                            ['Fin prévue', $projet['date_fin']],
-                            ['Deadline',   $projet['date_limite']],
+                            ['Création',   $dossier['date_creation']],
+                            ['Début',      $dossier['date_debut']],
+                            ['Fin prévue', $dossier['date_fin']],
+                            ['Deadline',   $dossier['date_limite']],
                         ];
                         foreach ($dates as [$label, $val]): ?>
                         <div class="bg-ink-50 rounded-xl p-3 text-center">
@@ -111,7 +111,7 @@ if ($projet['date_debut'] && $projet['date_limite']) {
                                         <p class="text-xs text-jade font-medium mt-1">Assigné à : <?= e($act['assigne_prenom'] . ' ' . $act['assigne_nom']) ?></p>
                                     <?php endif; ?>
                                 </div>
-                                <form action="/projets/update-action/<?= $projet['id_projet'] ?>" method="POST" class="flex items-center gap-2">
+                                <form action="/dossiers/update-action/<?= $dossier['id_dossier'] ?>" method="POST" class="flex items-center gap-2">
                                     <input type="hidden" name="id_tache" value="<?= $act['id_tache'] ?>">
                                     <select name="id_statut" onchange="this.form.submit()" class="text-xs t-input py-1 px-2">
                                         <option value="1" <?= $act['id_statut'] == 1 ? 'selected' : '' ?>>En attente</option>
@@ -126,7 +126,7 @@ if ($projet['date_debut'] && $projet['date_limite']) {
                 <?php endif; ?>
 
                 <?php if ($isChef): ?>
-                    <form action="/projets/add-action/<?= $projet['id_projet'] ?>" method="POST" class="space-y-3 pt-4 border-t border-ink-100">
+                    <form action="/dossiers/add-action/<?= $dossier['id_dossier'] ?>" method="POST" class="space-y-3 pt-4 border-t border-ink-100">
                         <p class="text-xs font-semibold uppercase tracking-wider text-ink-500">Ajouter une action</p>
                         <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
                             <input type="text" name="nom" class="t-input text-sm" placeholder="Nom de l'action" required>
@@ -146,7 +146,7 @@ if ($projet['date_debut'] && $projet['date_limite']) {
             <div class="bg-white rounded-2xl shadow-card p-7 hover-lift">
                 <h2 class="font-display text-lg font-bold text-ink mb-5">Discussions & Notes</h2>
 
-                <form action="/projets/comment/<?= $projet['id_projet'] ?>" method="POST" class="mb-6 space-y-3">
+                <form action="/dossiers/comment/<?= $dossier['id_dossier'] ?>" method="POST" class="mb-6 space-y-3">
                     <textarea name="contenu" rows="3" class="t-input text-sm resize-none" placeholder="Ajouter une note ou une observation officielle..." required></textarea>
                     <button type="submit" class="btn-jade text-xs py-2 px-4">Publier le commentaire</button>
                 </form>
@@ -172,13 +172,13 @@ if ($projet['date_debut'] && $projet['date_limite']) {
             <div class="bg-white rounded-2xl shadow-card p-5">
                 <h2 class="text-sm font-semibold text-ink mb-4 uppercase tracking-wider">Actions Administratives</h2>
                 <div class="flex flex-wrap gap-3">
-                    <a href="/projets/edit/<?= $projet['id_projet'] ?>" class="btn-primary text-sm">
+                    <a href="/dossiers/edit/<?= $dossier['id_dossier'] ?>" class="btn-primary text-sm">
                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="w-4 h-4">
                             <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
                         </svg>
                         Modifier le dossier
                     </a>
-                    <form action="/projets/delete/<?= $projet['id_projet'] ?>" method="POST"
+                    <form action="/dossiers/delete/<?= $dossier['id_dossier'] ?>" method="POST"
                           onsubmit="return confirm('Supprimer ce dossier définitivement ?')">
                         <button type="submit" class="btn-danger">
                             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="w-3.5 h-3.5">
@@ -198,10 +198,10 @@ if ($projet['date_debut'] && $projet['date_limite']) {
                 <h2 class="text-sm font-semibold text-ink mb-4 uppercase tracking-wider">Créateur</h2>
                 <div class="flex items-center gap-3">
                     <div class="w-10 h-10 rounded-full bg-ink flex items-center justify-center text-white text-xs font-bold flex-shrink-0">
-                        <?= mb_strtoupper(mb_substr($projet['createur_prenom'], 0, 1) . mb_substr($projet['createur_nom'], 0, 1)) ?>
+                        <?= mb_strtoupper(mb_substr($dossier['createur_prenom'], 0, 1) . mb_substr($dossier['createur_nom'], 0, 1)) ?>
                     </div>
                     <div>
-                        <p class="text-sm font-semibold text-ink"><?= e($projet['createur_prenom'] . ' ' . $projet['createur_nom']) ?></p>
+                        <p class="text-sm font-semibold text-ink"><?= e($dossier['createur_prenom'] . ' ' . $dossier['createur_nom']) ?></p>
                         <p class="text-xs text-jade">Responsable de dossier</p>
                     </div>
                 </div>
@@ -224,7 +224,7 @@ if ($projet['date_debut'] && $projet['date_limite']) {
                         </div>
                         <div class="min-w-0">
                             <p class="text-sm font-medium text-ink truncate"><?= e($m['prenom'] . ' ' . $m['nom']) ?></p>
-                            <p class="text-xs text-ink-500"><?= e($m['role_dans_projet'] ?? 'Collaborateur') ?></p>
+                            <p class="text-xs text-ink-500"><?= e($m['role_dans_dossier'] ?? 'Collaborateur') ?></p>
                         </div>
                     </div>
                     <?php endforeach; ?>
@@ -255,7 +255,7 @@ if ($projet['date_debut'] && $projet['date_limite']) {
                 <?php endif; ?>
 
                 <?php if ($isChef): ?>
-                    <form action="/projets/upload/<?= $projet['id_projet'] ?>" method="POST" enctype="multipart/form-data" class="flex items-center gap-2 mt-2">
+                    <form action="/dossiers/upload/<?= $dossier['id_dossier'] ?>" method="POST" enctype="multipart/form-data" class="flex items-center gap-2 mt-2">
                         <input type="file" name="fichier" class="text-sm text-ink-500 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-jade-50 file:text-jade hover:file:bg-jade-100" required>
                         <button type="submit" class="btn-primary text-xs py-2 px-3">Ajouter</button>
                     </form>
@@ -281,7 +281,7 @@ if ($projet['date_debut'] && $projet['date_limite']) {
                     </ul>
                 <?php endif; ?>
 
-                <form action="/projets/share/<?= $projet['id_projet'] ?>" method="POST" class="space-y-3 mt-4 pt-4 border-t border-ink-100">
+                <form action="/dossiers/share/<?= $dossier['id_dossier'] ?>" method="POST" class="space-y-3 mt-4 pt-4 border-t border-ink-100">
                     <div>
                         <label class="block text-xs font-medium text-ink-600 mb-1">Email du partenaire</label>
                         <input type="email" name="email" class="t-input text-sm" placeholder="email@gov.mg" required>
@@ -315,7 +315,7 @@ if ($projet['date_debut'] && $projet['date_limite']) {
                 <?php endif; ?>
             </div>
 
-            <a href="/projets" class="btn-ghost w-full justify-center mt-6">Retour aux dossiers</a>
+            <a href="/dossiers" class="btn-ghost w-full justify-center mt-6">Retour aux dossiers</a>
         </div>
     </div>
 

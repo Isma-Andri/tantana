@@ -2,7 +2,7 @@
 // controllers/AdminController.php
 
 require_once __DIR__ . '/../models/User.php';
-require_once __DIR__ . '/../models/Projet.php';
+require_once __DIR__ . '/../models/Dossier.php';
 require_once __DIR__ . '/../models/ActivityLog.php';
 
 class AdminController

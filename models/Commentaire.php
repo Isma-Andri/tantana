@@ -10,30 +10,30 @@ class Commentaire
         $this->db = getPDO();
     }
 
-    public function add(int $idProjet, int $idUser, string $contenu): int
+    public function add(int $idDossier, int $idUser, string $contenu): int
     {
         $stmt = $this->db->prepare("
-            INSERT INTO commentaire (id_projet, id_user, contenu)
-            VALUES (:projet, :user, :contenu)
+            INSERT INTO commentaire (id_dossier, id_user, contenu)
+            VALUES (:dossier, :user, :contenu)
         ");
         $stmt->execute([
-            'projet'  => $idProjet,
+            'dossier'  => $idDossier,
             'user'    => $idUser,
             'contenu' => $contenu
         ]);
         return (int) $this->db->lastInsertId();
     }
 
-    public function getByDossier(int $idProjet): array
+    public function getByDossier(int $idDossier): array
     {
         $stmt = $this->db->prepare("
             SELECT c.*, u.prenom, u.nom 
             FROM commentaire c
             JOIN users u ON c.id_user = u.id_user
-            WHERE c.id_projet = :projet
+            WHERE c.id_dossier = :dossier
             ORDER BY c.date_commentaire DESC
         ");
-        $stmt->execute(['projet' => $idProjet]);
+        $stmt->execute(['dossier' => $idDossier]);
         return $stmt->fetchAll();
     }
 }
