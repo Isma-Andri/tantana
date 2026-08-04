@@ -93,10 +93,6 @@ tantana/
 3. Valider les changements : `git commit -m "feat: ajouter ma fonctionnalité"`
 4. Pousser et ouvrir une pull request
 
-## Licence
-
-MIT — voir [LICENSE](LICENSE) pour plus de détails.
-
 ---
 
 Développé par [Ismaël Andrimalala](https://github.com/Isma-Andri).
