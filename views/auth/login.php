@@ -47,9 +47,27 @@ require __DIR__ . '/../partials/header.php';
                         <label class="block text-xs font-semibold uppercase tracking-wider text-slate-700 mb-1.5" for="password">
                             Mot de Passe
                         </label>
-                        <input type="password" id="password" name="password" class="t-input"
-                               placeholder="••••••••" autocomplete="current-password" required>
+                        <div class="relative">
+                            <input type="password" id="password" name="password" class="t-input pr-16"
+                                   placeholder="••••••••" autocomplete="current-password" required>
+                            <button type="button" onclick="togglePasswordVisibility('password', this)" class="absolute inset-y-0 right-0 pr-3 flex items-center text-xs font-semibold text-slate-500 hover:text-slate-800">
+                                Afficher
+                            </button>
+                        </div>
                     </div>
+
+                    <script>
+                    function togglePasswordVisibility(id, btn) {
+                        const input = document.getElementById(id);
+                        if (input.type === 'password') {
+                            input.type = 'text';
+                            btn.textContent = 'Masquer';
+                        } else {
+                            input.type = 'password';
+                            btn.textContent = 'Afficher';
+                        }
+                    }
+                    </script>
 
                     <button type="submit" class="btn-primary w-full justify-center py-3 text-sm mt-2">
                         Se connecter à l'espace

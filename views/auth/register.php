@@ -105,14 +105,37 @@ require __DIR__ . '/../partials/header.php';
 
                 <div>
                     <label class="block text-sm font-semibold text-ink mb-1.5" for="password">Mot de passe</label>
-                    <input type="password" id="password" name="password" class="t-input"
-                           placeholder="Min. 8 caractères" autocomplete="new-password" required>
+                    <div class="relative">
+                        <input type="password" id="password" name="password" class="t-input pr-16"
+                               placeholder="Min. 8 caractères" autocomplete="new-password" required>
+                        <button type="button" onclick="togglePasswordVisibility('password', this)" class="absolute inset-y-0 right-0 pr-3 flex items-center text-xs font-semibold text-slate-500 hover:text-slate-800">
+                            Afficher
+                        </button>
+                    </div>
                 </div>
                 <div>
                     <label class="block text-sm font-semibold text-ink mb-1.5" for="confirm">Confirmer le mot de passe</label>
-                    <input type="password" id="confirm" name="confirm" class="t-input"
-                           placeholder="••••••••" autocomplete="new-password" required>
+                    <div class="relative">
+                        <input type="password" id="confirm" name="confirm" class="t-input pr-16"
+                               placeholder="••••••••" autocomplete="new-password" required>
+                        <button type="button" onclick="togglePasswordVisibility('confirm', this)" class="absolute inset-y-0 right-0 pr-3 flex items-center text-xs font-semibold text-slate-500 hover:text-slate-800">
+                            Afficher
+                        </button>
+                    </div>
                 </div>
+
+                <script>
+                function togglePasswordVisibility(id, btn) {
+                    const input = document.getElementById(id);
+                    if (input.type === 'password') {
+                        input.type = 'text';
+                        btn.textContent = 'Masquer';
+                    } else {
+                        input.type = 'password';
+                        btn.textContent = 'Afficher';
+                    }
+                }
+                </script>
 
                 <button type="submit" class="btn-jade w-full justify-center py-3 text-base mt-2">
                     Créer mon compte
