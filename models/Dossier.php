@@ -99,6 +99,37 @@ class Dossier
         return $stmt->fetch() ?: null;
     }
 
+    public function hasAccess(int $dossierId, int $userId, string $role): bool
+    {
+        if ($role === 'Administrateur') {
+            return true;
+        }
+
+        // Check if creator
+        $stmt = $this->pdo->prepare('SELECT cree_par FROM dossiers WHERE id_dossier = :id LIMIT 1');
+        $stmt->execute([':id' => $dossierId]);
+        $creatorId = $stmt->fetchColumn();
+        if ($creatorId !== false && (int)$creatorId === $userId) {
+            return true;
+        }
+
+        // Check if participant
+        $stmt = $this->pdo->prepare('SELECT 1 FROM participer WHERE id_dossier = :did AND id_user = :uid LIMIT 1');
+        $stmt->execute([':did' => $dossierId, ':uid' => $userId]);
+        if ($stmt->fetch()) {
+            return true;
+        }
+
+        // Check if shared
+        $stmt = $this->pdo->prepare('SELECT 1 FROM partage_dossier WHERE id_dossier = :did AND id_user = :uid LIMIT 1');
+        $stmt->execute([':did' => $dossierId, ':uid' => $userId]);
+        if ($stmt->fetch()) {
+            return true;
+        }
+
+        return false;
+    }
+
     public function update(int $id, array $data, int $userId, bool $isAdmin = false): bool
     {
         $sql = 'UPDATE dossiers

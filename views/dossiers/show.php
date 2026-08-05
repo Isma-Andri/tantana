@@ -113,7 +113,7 @@ if ($dossier['date_debut'] && $dossier['date_limite']) {
                                 </div>
                                 <form action="/dossiers/update-action/<?= $dossier['id_dossier'] ?>" method="POST" class="flex items-center gap-2">
                                     <input type="hidden" name="id_tache" value="<?= $act['id_tache'] ?>">
-                                    <select name="id_statut" onchange="this.form.submit()" class="text-xs t-input py-1 px-2">
+                                    <select name="id_statut" onchange="this.form.submit()" class="text-xs t-input py-1 px-2" <?= (int)($dossier['id_workflow'] ?? 0) === 3 ? 'disabled' : '' ?>>
                                         <option value="1" <?= $act['id_statut'] == 1 ? 'selected' : '' ?>>En attente</option>
                                         <option value="2" <?= $act['id_statut'] == 2 ? 'selected' : '' ?>>En cours</option>
                                         <option value="3" <?= $act['id_statut'] == 3 ? 'selected' : '' ?>>Terminé</option>
@@ -125,7 +125,7 @@ if ($dossier['date_debut'] && $dossier['date_limite']) {
                     </ul>
                 <?php endif; ?>
 
-                <?php if ($isChef): ?>
+                <?php if ($isChef && (int)($dossier['id_workflow'] ?? 0) !== 3): ?>
                     <form action="/dossiers/add-action/<?= $dossier['id_dossier'] ?>" method="POST" class="space-y-3 pt-4 border-t border-ink-100">
                         <p class="text-xs font-semibold uppercase tracking-wider text-ink-500">Ajouter une action</p>
                         <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -139,6 +139,10 @@ if ($dossier['date_debut'] && $dossier['date_limite']) {
                         </div>
                         <button type="submit" class="btn-primary text-xs py-2 px-4">+ Ajouter l'action</button>
                     </form>
+                <?php elseif ((int)($dossier['id_workflow'] ?? 0) === 3): ?>
+                    <div class="pt-4 border-t border-ink-100">
+                        <p class="text-xs text-ink-500 italic">Le dossier est signé. Le plan d'action est gelé.</p>
+                    </div>
                 <?php endif; ?>
             </div>
 
@@ -146,10 +150,16 @@ if ($dossier['date_debut'] && $dossier['date_limite']) {
             <div class="bg-white rounded-2xl shadow-card p-7 hover-lift">
                 <h2 class="font-display text-lg font-bold text-ink mb-5">Discussions & Notes</h2>
 
+                <?php if ((int)($dossier['id_workflow'] ?? 0) !== 3): ?>
                 <form action="/dossiers/comment/<?= $dossier['id_dossier'] ?>" method="POST" class="mb-6 space-y-3">
                     <textarea name="contenu" rows="3" class="t-input text-sm resize-none" placeholder="Ajouter une note ou une observation officielle..." required></textarea>
                     <button type="submit" class="btn-jade text-xs py-2 px-4">Publier le commentaire</button>
                 </form>
+                <?php else: ?>
+                <div class="mb-6 p-4 bg-ink-50 rounded-xl border border-ink-100 text-sm text-ink-500 italic">
+                    Le dossier est signé. Les discussions officielles sont archivées et verrouillées.
+                </div>
+                <?php endif; ?>
 
                 <?php if (empty($commentaires)): ?>
                     <p class="text-sm text-ink-500 italic">Aucun commentaire pour le moment.</p>
@@ -172,12 +182,14 @@ if ($dossier['date_debut'] && $dossier['date_limite']) {
             <div class="bg-white rounded-2xl shadow-card p-5">
                 <h2 class="text-sm font-semibold text-ink mb-4 uppercase tracking-wider">Actions Administratives</h2>
                 <div class="flex flex-wrap gap-3">
+                    <?php if ((int)($dossier['id_workflow'] ?? 0) !== 3): ?>
                     <a href="/dossiers/edit/<?= $dossier['id_dossier'] ?>" class="btn-primary text-sm">
                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="w-4 h-4">
                             <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
                         </svg>
                         Modifier le dossier
                     </a>
+                    <?php endif; ?>
                     <form action="/dossiers/delete/<?= $dossier['id_dossier'] ?>" method="POST"
                           onsubmit="return confirm('Supprimer ce dossier définitivement ?')">
                         <button type="submit" class="btn-danger">
@@ -254,11 +266,13 @@ if ($dossier['date_debut'] && $dossier['date_limite']) {
                     </ul>
                 <?php endif; ?>
 
-                <?php if ($isChef): ?>
+                <?php if ($isChef && (int)($dossier['id_workflow'] ?? 0) !== 3): ?>
                     <form action="/dossiers/upload/<?= $dossier['id_dossier'] ?>" method="POST" enctype="multipart/form-data" class="flex items-center gap-2 mt-2">
                         <input type="file" name="fichier" class="text-sm text-ink-500 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-jade-50 file:text-jade hover:file:bg-jade-100" required>
                         <button type="submit" class="btn-primary text-xs py-2 px-3">Ajouter</button>
                     </form>
+                <?php elseif ((int)($dossier['id_workflow'] ?? 0) === 3): ?>
+                    <p class="text-xs text-ink-500 italic mt-2">Dossier archivé. Ajout de pièces jointes désactivé.</p>
                 <?php endif; ?>
             </div>
 
@@ -281,6 +295,7 @@ if ($dossier['date_debut'] && $dossier['date_limite']) {
                     </ul>
                 <?php endif; ?>
 
+                <?php if ((int)($dossier['id_workflow'] ?? 0) !== 3): ?>
                 <form action="/dossiers/share/<?= $dossier['id_dossier'] ?>" method="POST" class="space-y-3 mt-4 pt-4 border-t border-ink-100">
                     <div>
                         <label class="block text-xs font-medium text-ink-600 mb-1">Email du partenaire</label>
@@ -294,6 +309,9 @@ if ($dossier['date_debut'] && $dossier['date_limite']) {
                         <button type="submit" class="btn-jade text-sm py-2">Partager</button>
                     </div>
                 </form>
+                <?php else: ?>
+                <p class="text-xs text-ink-500 italic mt-4 pt-4 border-t border-ink-100">Le dossier est signé. Les autorisations d'accès ne peuvent plus être modifiées.</p>
+                <?php endif; ?>
             </div>
             <?php endif; ?>
 

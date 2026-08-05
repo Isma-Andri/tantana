@@ -73,6 +73,7 @@ class DossierController
     {
         requireRole('Responsable de dossier', 'Administrateur');
         $dossier  = $this->findOrFail($id);
+        $this->requireNotSigned($dossier);
         $statuts = $this->dossierModel->getStatuts();
         $workflows = (new Workflow())->getAllStatuts();
 
@@ -88,6 +89,8 @@ class DossierController
     public function update(int $id): void
     {
         requireRole('Responsable de dossier', 'Administrateur');
+        $dossier = $this->findOrFail($id);
+        $this->requireNotSigned($dossier);
 
         if (empty(trim($_POST['nom'] ?? ''))) {
             setFlash('error', 'Le nom du dossier est obligatoire.');
@@ -131,13 +134,29 @@ class DossierController
             setFlash('error', 'Dossier introuvable.');
             redirect('dossiers');
         }
+
+        $user = $_SESSION['user'];
+        if (!$this->dossierModel->hasAccess($id, (int)$user['id'], $user['role'])) {
+            setFlash('error', 'Accès refusé à ce dossier.');
+            redirect('dossiers');
+        }
+
         return $dossier;
+    }
+
+    private function requireNotSigned(array $dossier): void
+    {
+        if ((int)($dossier['id_workflow'] ?? 0) === 3) {
+            setFlash('error', 'Ce dossier est signé et verrouillé.');
+            redirect('dossiers/show/' . $dossier['id_dossier']);
+        }
     }
 
     public function upload(int $id): void
     {
         requireRole('Responsable de dossier', 'Administrateur');
-        $this->findOrFail($id); // verify exists
+        $dossier = $this->findOrFail($id); // verify exists
+        $this->requireNotSigned($dossier);
 
         if (isset($_FILES['fichier']) && $_FILES['fichier']['error'] === UPLOAD_ERR_OK) {
             $tmpName = $_FILES['fichier']['tmp_name'];
@@ -171,7 +190,8 @@ class DossierController
     public function share(int $id): void
     {
         requireRole('Responsable de dossier', 'Administrateur');
-        $this->findOrFail($id);
+        $dossier = $this->findOrFail($id);
+        $this->requireNotSigned($dossier);
         
         $email = strtolower(trim($_POST['email'] ?? ''));
         $niveau = $_POST['niveau_acces'] ?? 'Lecture';
@@ -199,7 +219,8 @@ class DossierController
     public function comment(int $id): void
     {
         requireAuth();
-        $this->findOrFail($id); // verify exists
+        $dossier = $this->findOrFail($id); // verify exists
+        $this->requireNotSigned($dossier);
 
         $contenu = trim($_POST['contenu'] ?? '');
         if (empty($contenu)) {
@@ -217,7 +238,8 @@ class DossierController
     public function addAction(int $id): void
     {
         requireRole('Responsable de dossier', 'Administrateur');
-        $this->findOrFail($id);
+        $dossier = $this->findOrFail($id);
+        $this->requireNotSigned($dossier);
 
         $nom = trim($_POST['nom'] ?? '');
         if (empty($nom)) {
@@ -242,7 +264,8 @@ class DossierController
     public function updateAction(int $id): void
     {
         requireAuth();
-        $this->findOrFail($id);
+        $dossier = $this->findOrFail($id);
+        $this->requireNotSigned($dossier);
 
         $idTache = (int)($_POST['id_tache'] ?? 0);
         $idStatut = (int)($_POST['id_statut'] ?? 0);
