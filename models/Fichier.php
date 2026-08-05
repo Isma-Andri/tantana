@@ -42,14 +42,14 @@ class Fichier
         ]);
     }
 
-    public function linkToAction(int $idFichier, int $idTache): bool
+    public function linkToAction(int $idFichier, int $idAction): bool
     {
         $stmt = $this->pdo->prepare(
-            'INSERT IGNORE INTO contenir (id_fichier, id_tache) VALUES (:id_fichier, :id_tache)'
+            'INSERT IGNORE INTO contenir (id_fichier, id_action) VALUES (:id_fichier, :id_action)'
         );
         return $stmt->execute([
             ':id_fichier' => $idFichier,
-            ':id_tache' => $idTache
+            ':id_action' => $idAction
         ]);
     }
 

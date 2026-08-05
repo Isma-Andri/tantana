@@ -68,8 +68,8 @@ CREATE TABLE priorite (
 
 INSERT INTO priorite (libelle) VALUES ('Basse'), ('Moyenne'), ('Haute'), ('Critique');
 
-CREATE TABLE tache (
-    id_tache     INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+CREATE TABLE actions (
+    id_action     INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
     nom          VARCHAR(255) NOT NULL,
     description  TEXT,
     date_debut   DATE,
@@ -79,18 +79,18 @@ CREATE TABLE tache (
     id_statut    INT UNSIGNED NOT NULL DEFAULT 1,
     id_priorite  INT UNSIGNED NOT NULL DEFAULT 2,
     id_dossier    INT UNSIGNED NOT NULL,
-    CONSTRAINT fk_tache_statut   FOREIGN KEY (id_statut)   REFERENCES statut(id_statut)     ON UPDATE CASCADE,
-    CONSTRAINT fk_tache_priorite FOREIGN KEY (id_priorite) REFERENCES priorite(id_priorite) ON UPDATE CASCADE,
-    CONSTRAINT fk_tache_dossier   FOREIGN KEY (id_dossier)   REFERENCES dossiers(id_dossier)    ON DELETE CASCADE
+    CONSTRAINT fk_action_statut   FOREIGN KEY (id_statut)   REFERENCES statut(id_statut)     ON UPDATE CASCADE,
+    CONSTRAINT fk_action_priorite FOREIGN KEY (id_priorite) REFERENCES priorite(id_priorite) ON UPDATE CASCADE,
+    CONSTRAINT fk_action_dossier   FOREIGN KEY (id_dossier)   REFERENCES dossiers(id_dossier)    ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 CREATE TABLE affecter (
     id_user          INT UNSIGNED NOT NULL,
-    id_tache         INT UNSIGNED NOT NULL,
+    id_action        INT UNSIGNED NOT NULL,
     date_affectation DATE NOT NULL DEFAULT (CURRENT_DATE),
-    PRIMARY KEY (id_user, id_tache),
+    PRIMARY KEY (id_user, id_action),
     CONSTRAINT fk_aff_user  FOREIGN KEY (id_user)  REFERENCES users(id_user)  ON DELETE CASCADE,
-    CONSTRAINT fk_aff_tache FOREIGN KEY (id_tache) REFERENCES tache(id_tache) ON DELETE CASCADE
+    CONSTRAINT fk_aff_action FOREIGN KEY (id_action) REFERENCES actions(id_action) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 CREATE TABLE fichier (
@@ -105,10 +105,10 @@ CREATE TABLE fichier (
 
 CREATE TABLE contenir (
     id_fichier INT UNSIGNED NOT NULL,
-    id_tache   INT UNSIGNED NOT NULL,
-    PRIMARY KEY (id_fichier, id_tache),
+    id_action   INT UNSIGNED NOT NULL,
+    PRIMARY KEY (id_fichier, id_action),
     CONSTRAINT fk_cont_fich  FOREIGN KEY (id_fichier) REFERENCES fichier(id_fichier) ON DELETE CASCADE,
-    CONSTRAINT fk_cont_tache FOREIGN KEY (id_tache)   REFERENCES tache(id_tache)    ON DELETE CASCADE
+    CONSTRAINT fk_cont_action FOREIGN KEY (id_action)   REFERENCES actions(id_action)    ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 CREATE TABLE dossier_fichier (

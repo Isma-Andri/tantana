@@ -112,7 +112,7 @@ if ($dossier['date_debut'] && $dossier['date_limite']) {
                                     <?php endif; ?>
                                 </div>
                                 <form action="/dossiers/update-action/<?= $dossier['id_dossier'] ?>" method="POST" class="flex items-center gap-2">
-                                    <input type="hidden" name="id_tache" value="<?= $act['id_tache'] ?>">
+                                    <input type="hidden" name="id_action" value="<?= $act['id_action'] ?>">
                                     <select name="id_statut" onchange="this.form.submit()" class="text-xs t-input py-1 px-2" <?= (int)($dossier['id_workflow'] ?? 0) === 3 ? 'disabled' : '' ?>>
                                         <option value="1" <?= $act['id_statut'] == 1 ? 'selected' : '' ?>>En attente</option>
                                         <option value="2" <?= $act['id_statut'] == 2 ? 'selected' : '' ?>>En cours</option>

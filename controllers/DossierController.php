@@ -249,10 +249,10 @@ class DossierController
 
         $_POST['id_dossier'] = $id;
         $actionModel = new Action();
-        $idTache = $actionModel->create($_POST);
+        $idAction = $actionModel->create($_POST);
 
         if (!empty($_POST['assign_to'])) {
-            $actionModel->assign($idTache, (int)$_POST['assign_to']);
+            $actionModel->assign($idAction, (int)$_POST['assign_to']);
         }
 
         (new ActivityLog())->log($id, $_SESSION['user']['id'], 'A créé une nouvelle action: ' . $nom);
@@ -267,11 +267,11 @@ class DossierController
         $dossier = $this->findOrFail($id);
         $this->requireNotSigned($dossier);
 
-        $idTache = (int)($_POST['id_tache'] ?? 0);
+        $idAction = (int)($_POST['id_action'] ?? 0);
         $idStatut = (int)($_POST['id_statut'] ?? 0);
 
-        if ($idTache > 0 && $idStatut > 0) {
-            (new Action())->updateStatut($idTache, $idStatut);
+        if ($idAction > 0 && $idStatut > 0) {
+            (new Action())->updateStatut($idAction, $idStatut);
             (new ActivityLog())->log($id, $_SESSION['user']['id'], 'A mis à jour le statut d\'une action');
             setFlash('success', 'Statut de l\'action mis à jour.');
         } else {

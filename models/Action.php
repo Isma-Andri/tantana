@@ -13,7 +13,7 @@ class Action
     public function create(array $data): int
     {
         $stmt = $this->db->prepare("
-            INSERT INTO tache (nom, description, date_debut, date_fin, date_limite, id_statut, id_priorite, id_dossier)
+            INSERT INTO actions (nom, description, date_debut, date_fin, date_limite, id_statut, id_priorite, id_dossier)
             VALUES (:nom, :description, :date_debut, :date_fin, :date_limite, :id_statut, :id_priorite, :id_dossier)
         ");
         $stmt->execute([
@@ -34,10 +34,10 @@ class Action
         $stmt = $this->db->prepare("
             SELECT t.*, s.libelle as statut_libelle, p.libelle as priorite_libelle,
                    u.id_user, u.prenom as assigne_prenom, u.nom as assigne_nom
-            FROM tache t
+            FROM actions t
             JOIN statut s ON t.id_statut = s.id_statut
             JOIN priorite p ON t.id_priorite = p.id_priorite
-            LEFT JOIN affecter a ON t.id_tache = a.id_tache
+            LEFT JOIN affecter a ON t.id_action = a.id_action
             LEFT JOIN users u ON a.id_user = u.id_user
             WHERE t.id_dossier = :dossier
             ORDER BY t.date_creation DESC
@@ -46,25 +46,25 @@ class Action
         return $stmt->fetchAll();
     }
 
-    public function updateStatut(int $idTache, int $idStatut): bool
+    public function updateStatut(int $idAction, int $idStatut): bool
     {
-        $stmt = $this->db->prepare("UPDATE tache SET id_statut = :statut WHERE id_tache = :tache");
+        $stmt = $this->db->prepare("UPDATE actions SET id_statut = :statut WHERE id_action = :action");
         return $stmt->execute([
             'statut' => $idStatut,
-            'tache'  => $idTache
+            'action'  => $idAction
         ]);
     }
 
-    public function assign(int $idTache, int $idUser): bool
+    public function assign(int $idAction, int $idUser): bool
     {
-        $stmt = $this->db->prepare("SELECT 1 FROM affecter WHERE id_user = :user AND id_tache = :tache");
-        $stmt->execute(['user' => $idUser, 'tache' => $idTache]);
+        $stmt = $this->db->prepare("SELECT 1 FROM affecter WHERE id_user = :user AND id_action = :action");
+        $stmt->execute(['user' => $idUser, 'action' => $idAction]);
         if ($stmt->fetch()) {
             return true;
         }
 
-        $stmt = $this->db->prepare("INSERT INTO affecter (id_user, id_tache) VALUES (:user, :tache)");
-        return $stmt->execute(['user' => $idUser, 'tache' => $idTache]);
+        $stmt = $this->db->prepare("INSERT INTO affecter (id_user, id_action) VALUES (:user, :action)");
+        return $stmt->execute(['user' => $idUser, 'action' => $idAction]);
     }
 
     public function getStatuts(): array

@@ -101,7 +101,7 @@ class User
         $totalUsers    = (int) $this->pdo->query('SELECT COUNT(*) FROM users')->fetchColumn();
         $totalDossiers = (int) $this->pdo->query('SELECT COUNT(*) FROM dossiers')->fetchColumn();
         $totalFichiers = (int) $this->pdo->query('SELECT COUNT(*) FROM fichier')->fetchColumn();
-        $totalActions  = (int) $this->pdo->query('SELECT COUNT(*) FROM tache')->fetchColumn();
+        $totalActions  = (int) $this->pdo->query('SELECT COUNT(*) FROM actions')->fetchColumn();
 
         return [
             'users'    => $totalUsers,
