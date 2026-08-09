@@ -35,6 +35,7 @@ if (!function_exists('urgencyClass')) {
         return 'text-ink-500';
     }
 }
+?>
 <main class="max-w-[90rem] 2xl:max-w-[98rem] w-full mx-auto px-4 sm:px-6 lg:px-8 xl:px-12 py-10 page-in">
 
     <div class="bg-white rounded-2xl shadow-card p-6 mb-8 flex flex-col lg:flex-row items-center justify-between gap-6 border border-slate-100 hover-lift">
