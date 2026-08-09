@@ -17,12 +17,12 @@ require __DIR__ . '/../partials/flash.php';
     </nav>
 
     <div class="bg-white rounded-2xl shadow-card overflow-hidden">
-        <div class="bg-[#064e3b] px-8 py-6 flex items-center justify-between gap-4">
+        <div class="bg-primary px-8 py-6 flex items-center justify-between gap-4">
             <div>
-                <h1 class="font-display text-2xl font-bold text-white">Modifier le dossier</h1>
-                <p class="text-white/70 text-sm mt-1">Modifiez les informations du dossier de politique.</p>
+                <h1 class="font-display text-2xl font-bold text-primary-foreground">Modifier le dossier</h1>
+                <p class="text-primary-foreground/70 text-sm mt-1">Modifiez les informations du dossier de politique.</p>
             </div>
-            <img src="/img/signed_treaty.jpg" alt="Traité" class="w-16 h-16 rounded-xl object-cover border-2 border-white/20 shadow-sm flex-shrink-0 hidden sm:block">
+            <img src="/img/signed_treaty.jpg" alt="Traité" class="w-16 h-16 rounded-xl object-cover border-2 border-primary-foreground/20 shadow-sm flex-shrink-0 hidden sm:block">
         </div>
 
         <form action="/dossiers/edit/<?= $dossier['id_dossier'] ?>" method="POST" class="p-8 space-y-6" novalidate>
@@ -39,6 +39,28 @@ require __DIR__ . '/../partials/flash.php';
                 <label class="block text-sm font-semibold text-ink mb-1.5" for="description">Description</label>
                 <textarea id="description" name="description" rows="4" class="t-input resize-none"
                           maxlength="2000"><?= e($_POST['description'] ?? $dossier['description'] ?? '') ?></textarea>
+            </div>
+
+            <div>
+                <label class="block text-sm font-semibold text-ink mb-1.5">Collaborateurs</label>
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 max-h-48 overflow-y-auto p-3 border border-ink-100 rounded-xl bg-ink-50">
+                    <?php if (empty($users)): ?>
+                        <p class="text-xs text-ink-500 italic col-span-2">Aucun utilisateur disponible.</p>
+                    <?php else: ?>
+                        <?php foreach ($users as $u): ?>
+                            <?php if ((int)$u['id_user'] === (int)$dossier['cree_par']) continue; ?>
+                            <label class="flex items-center gap-2.5 p-2 bg-white rounded-lg border border-ink-100 hover:border-jade cursor-pointer transition-colors">
+                                <input type="checkbox" name="collaborateurs[]" value="<?= $u['id_user'] ?>" class="rounded border-ink-300 text-jade focus:ring-jade"
+                                    <?= in_array((int)$u['id_user'], $currentMemberIds) ? 'checked' : '' ?>>
+                                <div class="min-w-0">
+                                    <p class="text-xs font-semibold text-ink truncate"><?= e($u['prenom'] . ' ' . $u['nom']) ?></p>
+                                    <p class="text-[10px] text-ink-500 truncate"><?= e($u['email']) ?></p>
+                                </div>
+                            </label>
+                        <?php endforeach; ?>
+                    <?php endif; ?>
+                </div>
+                <p class="text-xs text-ink-500 mt-1">Optionnel. Sélectionnez les personnes qui participeront à ce dossier.</p>
             </div>
 
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -77,6 +99,14 @@ require __DIR__ . '/../partials/flash.php';
                            value="<?= e($_POST[$name] ?? $dossier[$name] ?? '') ?>">
                 </div>
                 <?php endforeach; ?>
+            </div>
+
+            <div class="flex items-center gap-3 pt-2">
+                <input type="checkbox" id="droit_depot" name="droit_depot" value="1" class="rounded border-ink-300 text-jade focus:ring-jade"
+                    <?= (int)($_POST['droit_depot'] ?? $dossier['droit_depot'] ?? 1) === 1 ? 'checked' : '' ?>>
+                <label class="text-sm font-semibold text-ink cursor-pointer" for="droit_depot">
+                    Autoriser les collaborateurs à joindre des fichiers
+                </label>
             </div>
 
             <div class="flex flex-wrap items-center gap-3 pt-2">

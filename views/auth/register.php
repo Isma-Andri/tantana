@@ -6,7 +6,7 @@ require __DIR__ . '/../partials/header.php';
 
 <div class="min-h-screen flex">
 
-    <div class="hidden lg:flex lg:w-2/5 bg-[#064e3b] flex-col justify-between p-12 relative overflow-hidden">
+    <div class="hidden lg:flex lg:w-2/5 bg-primary flex-col justify-between p-12 relative overflow-hidden">
         <svg class="absolute inset-0 w-full h-full opacity-10" viewBox="0 0 400 800" fill="none">
             <?php foreach ([100,200,300,400,500,600] as $y): ?>
             <rect x="-60" y="<?= $y ?>" width="520" height="<?= $y % 200 === 0 ? 4 : 2 ?>" rx="2" fill="white" transform="rotate(-12 -60 <?= $y ?>)"/>
@@ -48,21 +48,45 @@ require __DIR__ . '/../partials/header.php';
         <div class="absolute -bottom-20 -right-20 w-60 h-60 bg-white/10 rounded-full blur-3xl"></div>
     </div>
 
-    <div class="flex-1 flex flex-col justify-center px-6 sm:px-12 lg:px-16 py-12 bg-white overflow-y-auto page-in">
+    <div class="flex-1 flex flex-col justify-center px-6 sm:px-12 lg:px-16 py-12 bg-card overflow-y-auto page-in relative">
+        <div class="absolute top-4 right-4 z-50">
+            <button onclick="toggleTheme()" class="w-9 h-9 flex items-center justify-center rounded-md border border-border text-muted-foreground hover:bg-accent hover:text-accent-foreground transition-colors bg-card" title="Changer de thème">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="w-4 h-4 hidden dark:block">
+                    <circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>
+                </svg>
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="w-4 h-4 dark:hidden">
+                    <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
+                </svg>
+            </button>
+        </div>
+
+        <script>
+        function toggleTheme() {
+            if (document.documentElement.classList.contains('dark')) {
+                document.documentElement.classList.remove('dark');
+                localStorage.setItem('theme', 'light');
+            } else {
+                document.documentElement.classList.add('dark');
+                localStorage.setItem('theme', 'dark');
+            }
+        }
+        </script>
+
         <?php require __DIR__ . '/../partials/flash.php'; ?>
 
         <div class="max-w-md w-full mx-auto">
             <div class="lg:hidden flex items-center gap-2 mb-8">
-                <div class="w-8 h-8 rounded-lg bg-ink flex items-center justify-center">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="#00A67E" stroke-width="2.5" class="w-4 h-4">
-                        <path d="M9 3H5a2 2 0 0 0-2 2v4m6-6h10a2 2 0 0 1 2 2v4M9 3v18m0 0h10a2 2 0 0 0 2-2V9M9 21H5a2 2 0 0 1-2-2V9m0 0h18"/>
+                <div class="w-8 h-8 rounded-lg bg-primary flex items-center justify-center">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" class="w-4 h-4 text-primary-foreground">
+                        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                        <polyline points="14 2 14 8 20 8"/>
                     </svg>
                 </div>
-                <span class="font-display text-xl font-bold">Tantana</span>
+                <span class="font-bold text-xl text-foreground">Tantana</span>
             </div>
 
-            <h1 class="font-display text-3xl font-extrabold text-ink">Créer un compte</h1>
-            <p class="text-ink-500 mt-1 text-sm">Rejoignez votre équipe sur Tantana</p>
+            <h1 class="text-3xl font-extrabold text-foreground">Créer un compte</h1>
+            <p class="text-muted-foreground mt-1 text-sm">Rejoignez votre équipe sur Tantana</p>
 
             <form action="register" method="POST" class="mt-8 space-y-4" novalidate>
                 <div class="grid grid-cols-2 gap-4">
@@ -88,6 +112,7 @@ require __DIR__ . '/../partials/header.php';
                     <label class="block text-sm font-semibold text-ink mb-1.5">Rôle</label>
                     <div class="grid grid-cols-2 gap-3">
                         <?php foreach ($roles as $role): ?>
+                        <?php if ($role['libelle'] === 'Administrateur') continue; ?>
                         <label class="cursor-pointer">
                             <input type="radio" name="id_role" value="<?= $role['id_role'] ?>"
                                    class="sr-only"
@@ -154,7 +179,7 @@ require __DIR__ . '/../partials/header.php';
 </div>
 
 <style>
-input[type="radio"]:checked + .role-box { border-color: #00A67E; background: #E6F7F2; }
+input[type="radio"]:checked + .role-box { border-color: hsl(var(--ring)); background: hsl(var(--accent)); }
 </style>
 
 <?php require __DIR__ . '/../partials/footer.php'; ?>

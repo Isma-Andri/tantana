@@ -28,7 +28,7 @@ body {
 .logo-title {
     font-weight: 700;
     font-size: 1.5rem;
-    color: #064e3b;
+    color: hsl(var(--jade));
     text-decoration: none;
     display: flex;
     align-items: center;
@@ -43,7 +43,7 @@ body {
     transition: color 0.2s;
 }
 .nav-links a:hover {
-    color: #064e3b;
+    color: hsl(var(--jade));
 }
 .hero-section {
     display: flex;
@@ -79,7 +79,7 @@ body {
     margin-bottom: 1.5rem;
 }
 .hero-title span {
-    color: #064e3b;
+    color: hsl(var(--jade));
 }
 .hero-desc {
     font-size: 1.125rem;
@@ -92,7 +92,7 @@ body {
     gap: 1rem;
 }
 .btn-primary {
-    background-color: #064e3b;
+    background-color: hsl(var(--jade));
     color: #ffffff;
     padding: 0.75rem 2rem;
     border-radius: 0.5rem;

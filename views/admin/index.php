@@ -17,14 +17,14 @@ require __DIR__ . '/../partials/flash.php';
                 Supervisez les utilisateurs, attribuez les privilèges ministériels et consultez l'historique complet d'audit de la plateforme Tantana.
             </p>
         </div>
-        <img src="/img/diplomatic_seal.jpg" alt="Sceau Officiel" class="w-24 h-24 rounded-full object-cover border-2 border-[#064e3b] shadow-sm flex-shrink-0">
+        <img src="/img/diplomatic_seal.jpg" alt="Sceau Officiel" class="w-24 h-24 rounded-full object-cover border-2 border-jade shadow-sm flex-shrink-0">
     </div>
 
     <!-- Statistiques Globales -->
     <div class="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-10">
         <?php
         $statCards = [
-            ['Utilisateurs', $stats['users'], 'M17 20h5v-2a3 3 0 0 0-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 0 1 5.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 0 1 9.288 0', 'bg-emerald-50 text-[#064e3b]'],
+            ['Utilisateurs', $stats['users'], 'M17 20h5v-2a3 3 0 0 0-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 0 1 5.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 0 1 9.288 0', 'bg-emerald-50 text-jade'],
             ['Dossiers d\'État', $stats['dossiers'], 'M3 7v10a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2z', 'bg-sky-50 text-sky-700'],
             ['Pièces Jointes', $stats['fichiers'], 'M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z', 'bg-amber-50 text-amber-700'],
             ['Actions Totales', $stats['actions'], 'M9 12l2 2 4-4m6 2a9 9 0 1 1-18 0 9 9 0 0 1 18 0z', 'bg-indigo-50 text-indigo-700'],
@@ -124,7 +124,7 @@ require __DIR__ . '/../partials/flash.php';
                                     <span class="text-[10px] text-slate-400 font-normal"><?= date('d/m H:i', strtotime($log['date_action'])) ?></span>
                                 </div>
                                 <p class="text-slate-600 mb-1"><?= e($log['action']) ?></p>
-                                <span class="text-[11px] text-[#064e3b] font-medium">📁 <?= e($log['dossier_nom']) ?></span>
+                                <span class="text-[11px] text-jade font-medium">📁 <?= e($log['dossier_nom']) ?></span>
                             </div>
                         <?php endforeach; ?>
                     </div>
