@@ -18,18 +18,22 @@ $statutColors = [
     'Annulé'     => 'badge-rose',
 ];
 
-function formatDate(?string $date): string
-{
-    return $date ? date('d/m/Y', strtotime($date)) : '—';
+if (!function_exists('formatDate')) {
+    function formatDate(?string $date): string
+    {
+        return $date ? date('d/m/Y', strtotime($date)) : '—';
+    }
 }
 
-function urgencyClass(?string $dateLimit): string
-{
-    if (!$dateLimit) return 'text-ink-500';
-    $days = (int) ceil((strtotime($dateLimit) - time()) / 86400);
-    if ($days < 0)  return 'text-rose font-semibold';
-    if ($days <= 7) return 'text-sun font-semibold';
-    return 'text-ink-500';
+if (!function_exists('urgencyClass')) {
+    function urgencyClass(?string $dateLimit): string
+    {
+        if (!$dateLimit) return 'text-ink-500';
+        $days = (int) ceil((strtotime($dateLimit) - time()) / 86400);
+        if ($days < 0)  return 'text-rose font-semibold';
+        if ($days <= 7) return 'text-sun font-semibold';
+        return 'text-ink-500';
+    }
 }
 ?>
 
@@ -96,8 +100,7 @@ function urgencyClass(?string $dateLimit): string
             $badgeClass = $statutColors[$p['statut_libelle']] ?? 'badge-gray';
             $isOwner    = ((int) $p['cree_par'] === (int) $user['id']);
         ?>
-        <div class="bg-white rounded-2xl shadow-card hover-lift transition-all duration-300 flex flex-col overflow-hidden group">
-            <div class="h-1.5 bg-[#064e3b] rounded-t-2xl"></div>
+        <div class="bg-card rounded-lg border border-border hover:border-ring/30 shadow-sm hover-lift transition-all duration-300 flex flex-col overflow-hidden group">
             <div class="p-5 flex flex-col flex-1">
                 <div class="flex items-start justify-between gap-2 mb-3">
                     <h3 class="font-display font-bold text-lg text-ink leading-tight group-hover:text-jade transition-colors line-clamp-2">
