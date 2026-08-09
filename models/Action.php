@@ -1,6 +1,8 @@
 <?php
 // models/Action.php
 
+require_once __DIR__ . '/../config/database.php';
+
 class Action
 {
     private PDO $db;
@@ -18,12 +20,12 @@ class Action
         ");
         $stmt->execute([
             'nom'         => $data['nom'],
-            'description' => $data['description'] ?? null,
-            'date_debut'  => $data['date_debut'] ?? null,
-            'date_fin'    => $data['date_fin'] ?? null,
-            'date_limite' => $data['date_limite'] ?? null,
-            'id_statut'   => $data['id_statut'] ?? 1,
-            'id_priorite' => $data['id_priorite'] ?? 2,
+            'description' => !empty($data['description']) ? $data['description'] : null,
+            'date_debut'  => !empty($data['date_debut']) ? $data['date_debut'] : null,
+            'date_fin'    => !empty($data['date_fin']) ? $data['date_fin'] : null,
+            'date_limite' => !empty($data['date_limite']) ? $data['date_limite'] : null,
+            'id_statut'   => !empty($data['id_statut']) ? (int)$data['id_statut'] : 1,
+            'id_priorite' => !empty($data['id_priorite']) ? (int)$data['id_priorite'] : 2,
             'id_dossier'   => $data['id_dossier'],
         ]);
         return (int) $this->db->lastInsertId();
@@ -75,5 +77,50 @@ class Action
     public function getPriorites(): array
     {
         return $this->db->query("SELECT * FROM priorite")->fetchAll();
+    }
+
+    public function updateFull(int $idAction, array $data): bool
+    {
+        $stmt = $this->db->prepare("
+            UPDATE actions 
+            SET nom = :nom, 
+                description = :description, 
+                date_debut = :date_debut, 
+                date_fin = :date_fin, 
+                date_limite = :date_limite, 
+                id_statut = :id_statut, 
+                id_priorite = :id_priorite
+            WHERE id_action = :id
+        ");
+        
+        $ok = $stmt->execute([
+            'nom'         => $data['nom'],
+            'description' => $data['description'] ?: null,
+            'date_debut'  => $data['date_debut'] ?: null,
+            'date_fin'    => $data['date_fin'] ?: null,
+            'date_limite' => $data['date_limite'] ?: null,
+            'id_statut'   => (int) ($data['id_statut'] ?? 1),
+            'id_priorite' => (int) ($data['id_priorite'] ?? 2),
+            'id'          => $idAction,
+        ]);
+
+        if ($ok) {
+            // Update assignee
+            $stmtDel = $this->db->prepare("DELETE FROM affecter WHERE id_action = :action");
+            $stmtDel->execute(['action' => $idAction]);
+
+            if (!empty($data['assign_to'])) {
+                $stmtIns = $this->db->prepare("INSERT INTO affecter (id_user, id_action) VALUES (:user, :action)");
+                $stmtIns->execute(['user' => (int)$data['assign_to'], 'action' => $idAction]);
+            }
+        }
+
+        return $ok;
+    }
+
+    public function delete(int $idAction): bool
+    {
+        $stmt = $this->db->prepare("DELETE FROM actions WHERE id_action = :id");
+        return $stmt->execute(['id' => $idAction]);
     }
 }

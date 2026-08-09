@@ -15,8 +15,8 @@ class Dossier
     public function create(array $data): int
     {
         $stmt = $this->pdo->prepare(
-            'INSERT INTO dossiers (nom, description, date_creation, date_debut, date_fin, date_limite, id_statut, id_workflow, cree_par)
-             VALUES (:nom, :description, CURRENT_DATE, :date_debut, :date_fin, :date_limite, 1, :id_workflow, :cree_par)'
+            'INSERT INTO dossiers (nom, description, date_creation, date_debut, date_fin, date_limite, id_statut, id_workflow, cree_par, droit_depot)
+             VALUES (:nom, :description, CURRENT_DATE, :date_debut, :date_fin, :date_limite, 1, :id_workflow, :cree_par, :droit_depot)'
         );
         $stmt->execute([
             ':nom'         => trim($data['nom']),
@@ -26,6 +26,7 @@ class Dossier
             ':date_limite' => $data['date_limite'] ?: null,
             ':id_workflow' => (int) ($data['id_workflow'] ?? 1),
             ':cree_par'    => (int) $data['cree_par'],
+            ':droit_depot' => (int) ($data['droit_depot'] ?? 1),
         ]);
 
         $id = (int) $this->pdo->lastInsertId();
@@ -134,12 +135,18 @@ class Dossier
     {
         $sql = 'UPDATE dossiers
              SET nom = :nom, description = :description, date_debut = :date_debut,
-                 date_fin = :date_fin, date_limite = :date_limite, id_statut = :id_statut, id_workflow = :id_workflow
+                 date_fin = :date_fin, date_limite = :date_limite, id_statut = :id_statut, id_workflow = :id_workflow, droit_depot = :droit_depot
              WHERE id_dossier = :id';
         if (!$isAdmin) {
             $sql .= ' AND cree_par = :cree_par';
         }
         $stmt = $this->pdo->prepare($sql);
+
+        $idWorkflow = (int) ($data['id_workflow'] ?? 1);
+        $idStatut = (int) $data['id_statut'];
+        if ($idWorkflow === 3) {
+            $idStatut = 3;
+        }
 
         $params = [
             ':nom'         => trim($data['nom']),
@@ -147,8 +154,9 @@ class Dossier
             ':date_debut'  => $data['date_debut']  ?: null,
             ':date_fin'    => $data['date_fin']    ?: null,
             ':date_limite' => $data['date_limite'] ?: null,
-            ':id_statut'   => (int) $data['id_statut'],
-            ':id_workflow' => (int) ($data['id_workflow'] ?? 1),
+            ':id_statut'   => $idStatut,
+            ':id_workflow' => $idWorkflow,
+            ':droit_depot' => (int) ($data['droit_depot'] ?? 1),
             ':id'          => $id,
         ];
         if (!$isAdmin) {
@@ -198,6 +206,29 @@ class Dossier
 
     public function getStatuts(): array
     {
-        return getPDO()->query('SELECT * FROM statut ORDER BY id_statut')->fetchAll();
+        return $this->pdo->query('SELECT * FROM statut ORDER BY id_statut')->fetchAll();
+    }
+
+    public function syncMembers(int $dossierId, array $newUserIds, int $creatorId): void
+    {
+        // 1. Delete all current members who are not the creator
+        $stmt = $this->pdo->prepare('DELETE FROM participer WHERE id_dossier = :did AND id_user != :cid');
+        $stmt->execute([':did' => $dossierId, ':cid' => $creatorId]);
+
+        // 2. Add new members
+        foreach ($newUserIds as $userId) {
+            $userId = (int) $userId;
+            if ($userId === $creatorId) continue;
+            $this->addMember($dossierId, $userId, 'Collaborateur');
+        }
+
+        // 3. Remove task assignments for users who are no longer members of the dossier
+        $stmt = $this->pdo->prepare('
+            DELETE a FROM affecter a 
+            JOIN actions ac ON a.id_action = ac.id_action 
+            WHERE ac.id_dossier = :did 
+              AND a.id_user NOT IN (SELECT id_user FROM participer WHERE id_dossier = :did2)
+        ');
+        $stmt->execute([':did' => $dossierId, ':did2' => $dossierId]);
     }
 }
