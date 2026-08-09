@@ -32,9 +32,8 @@ require __DIR__ . '/../partials/header.php';
         
         <!-- Header logo -->
         <div class="text-center">
-            <a href="/" class="inline-flex items-center gap-3 group">
-                <img src="/img/diplomatic_seal.jpg" alt="Logo Sceau" class="w-12 h-12 rounded-full border border-border shadow-sm group-hover:scale-105 transition-transform duration-300">
-                <span class="text-3xl font-extrabold text-foreground tracking-tight">Tantana</span>
+            <a href="/" class="group inline-block">
+                <span class="font-display tracking-[0.3em] uppercase font-black text-foreground text-4xl transition-colors group-hover:text-jade">T<span class="font-light text-muted-foreground/75">A</span>N<span class="font-light text-muted-foreground/75">T</span>A<span class="font-light text-muted-foreground/75">N</span>A</span>
             </a>
             <h1 class="text-2xl font-bold text-foreground mt-6">Accès Sécurisé</h1>
             <p class="text-muted-foreground text-sm mt-1">Plateforme centrale des affaires diplomatiques et gouvernementales</p>

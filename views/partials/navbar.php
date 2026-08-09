@@ -12,14 +12,8 @@ $isAdmin  = $user['role'] === 'Administrateur';
     <div class="max-w-[90rem] 2xl:max-w-[98rem] w-full mx-auto px-4 sm:px-6 lg:px-8 xl:px-12">
         <div class="flex items-center justify-between h-16">
 
-            <a href="/dossiers" class="flex items-center gap-2 group">
-                <div class="w-8 h-8 rounded-md bg-primary flex items-center justify-center">
-                    <svg viewBox="0 0 24 24" fill="none" class="w-4 h-4 text-primary-foreground" stroke="currentColor" stroke-width="2.5">
-                        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
-                        <polyline points="14 2 14 8 20 8"/>
-                    </svg>
-                </div>
-                <span class="font-semibold text-lg text-foreground group-hover:text-muted-foreground transition-colors">Tantana</span>
+            <a href="/dossiers" class="group py-2 flex items-center">
+                <span class="font-display tracking-[0.25em] uppercase font-black text-foreground text-xl transition-colors group-hover:text-jade">T<span class="font-light text-muted-foreground/75">A</span>N<span class="font-light text-muted-foreground/75">T</span>A<span class="font-light text-muted-foreground/75">N</span>A</span>
             </a>
 
             <div class="hidden md:flex items-center gap-2">

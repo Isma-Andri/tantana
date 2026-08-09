@@ -14,9 +14,8 @@ require __DIR__ . '/../partials/header.php';
         </svg>
 
         <div class="relative z-10">
-            <a href="login" class="flex items-center gap-2">
-                <img src="/img/diplomatic_seal.jpg" alt="Logo" class="w-10 h-10 rounded-full border-2 border-white/20">
-                <span class="font-display text-2xl font-bold text-white">Tantana</span>
+            <a href="login" class="group">
+                <span class="font-display tracking-[0.25em] uppercase font-black text-white text-2xl">T<span class="font-light text-white/60">A</span>N<span class="font-light text-white/60">T</span>A<span class="font-light text-white/60">N</span>A</span>
             </a>
         </div>
 
