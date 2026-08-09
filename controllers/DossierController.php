@@ -9,6 +9,7 @@ require_once __DIR__ . '/../models/User.php';
 require_once __DIR__ . '/../models/Commentaire.php';
 require_once __DIR__ . '/../models/ActivityLog.php';
 require_once __DIR__ . '/../models/Action.php';
+require_once __DIR__ . '/../models/DemandeValidation.php';
 
 class DossierController
 {
@@ -79,13 +80,19 @@ class DossierController
         $fichiers = (new Fichier())->getFichiersByDossier($id);
         $commentaires = (new Commentaire())->getByDossier($id);
         $activityLogs = (new ActivityLog())->getByDossier($id);
-        
+
         $actionModel = new Action();
         $actions = $actionModel->getByDossier($id);
         $priorites = $actionModel->getPriorites();
         $statutsAction = $actionModel->getStatuts();
 
-        $user    = $_SESSION['user'];
+        $user = $_SESSION['user'];
+        $isOwnerOrAdmin = ((int)$dossier['cree_par'] === (int)$user['id'])
+                       || $user['role'] === 'Administrateur';
+        $demandesEnAttente = $isOwnerOrAdmin
+            ? (new DemandeValidation())->getEnAttenteByDossier($id)
+            : [];
+
         require __DIR__ . '/../views/dossiers/show.php';
     }
 
@@ -218,43 +225,65 @@ class DossierController
 
     public function upload(int $id): void
     {
-        $dossier = $this->findOrFail($id); // verify exists and hasAccess
+        $dossier = $this->findOrFail($id);
         $this->requireNotSigned($dossier);
 
-        // Check upload permissions for collaborators
         $isAdmin = $_SESSION['user']['role'] === 'Administrateur';
-        $isChef = $_SESSION['user']['role'] === 'Responsable de dossier' || $isAdmin;
+        $isChef  = $_SESSION['user']['role'] === 'Responsable de dossier' || $isAdmin;
+
         if (!$isChef && (int)$dossier['droit_depot'] === 0) {
             setFlash('error', 'Le dépôt de fichiers a été désactivé par le responsable pour les collaborateurs.');
             redirect('dossiers/show/' . $id);
         }
 
-        if (isset($_FILES['fichier']) && $_FILES['fichier']['error'] === UPLOAD_ERR_OK) {
-            $tmpName = $_FILES['fichier']['tmp_name'];
-            $name = basename($_FILES['fichier']['name']);
-            $size = $_FILES['fichier']['size'];
-            
-            $uploadDir = __DIR__ . '/../public/uploads/';
-            $destPath = $uploadDir . time() . '_' . $name;
-            
-            if (move_uploaded_file($tmpName, $destPath)) {
-                $fichierModel = new Fichier();
-                $idFichier = $fichierModel->uploadFichier([
-                    'nom' => $name,
-                    'chemin' => str_replace(__DIR__ . '/../public', '', $destPath),
-                    'taille' => $size
-                ], $_SESSION['user']['id']);
-                
-                if ($idFichier) {
-                    $fichierModel->linkToDossier($idFichier, $id);
-                    (new ActivityLog())->log($id, $_SESSION['user']['id'], 'A ajouté une pièce jointe: ' . $name);
-                    setFlash('success', 'Pièce jointe ajoutée.');
-                }
-            } else {
-                setFlash('error', 'Erreur lors du déplacement du fichier.');
+        if (!isset($_FILES['fichier']) || $_FILES['fichier']['error'] !== UPLOAD_ERR_OK) {
+            setFlash('error', 'Erreur de téléchargement du fichier.');
+            redirect('dossiers/show/' . $id);
+        }
+
+        $tmpName = $_FILES['fichier']['tmp_name'];
+        $name    = basename($_FILES['fichier']['name']);
+        $size    = $_FILES['fichier']['size'];
+
+        // --- Collaborateur : soumet une demande de validation ---
+        if (!$isChef) {
+            // Stocker le fichier temporairement dans uploads/pending/
+            $pendingDir = __DIR__ . '/../public/uploads/pending/';
+            if (!is_dir($pendingDir)) {
+                mkdir($pendingDir, 0775, true);
+            }
+            $tmpDest = $pendingDir . time() . '_' . $name;
+            if (!move_uploaded_file($tmpName, $tmpDest)) {
+                setFlash('error', 'Impossible de stocker le fichier temporairement.');
+                redirect('dossiers/show/' . $id);
+            }
+            (new DemandeValidation())->soumettre($id, $_SESSION['user']['id'], 'upload_fichier', [
+                'nom'      => $name,
+                'chemin_tmp' => str_replace(__DIR__ . '/../public', '', $tmpDest),
+                'taille'   => $size,
+            ]);
+            (new ActivityLog())->log($id, $_SESSION['user']['id'], 'A soumis une demande d\'upload : ' . $name);
+            setFlash('success', 'Votre fichier a été soumis et attend la validation du responsable.');
+            redirect('dossiers/show/' . $id);
+        }
+
+        // --- Chef / Admin : upload direct ---
+        $uploadDir = __DIR__ . '/../public/uploads/';
+        $destPath  = $uploadDir . time() . '_' . $name;
+        if (move_uploaded_file($tmpName, $destPath)) {
+            $fichierModel = new Fichier();
+            $idFichier = $fichierModel->uploadFichier([
+                'nom'    => $name,
+                'chemin' => str_replace(__DIR__ . '/../public', '', $destPath),
+                'taille' => $size,
+            ], $_SESSION['user']['id']);
+            if ($idFichier) {
+                $fichierModel->linkToDossier($idFichier, $id);
+                (new ActivityLog())->log($id, $_SESSION['user']['id'], 'A ajouté une pièce jointe : ' . $name);
+                setFlash('success', 'Pièce jointe ajoutée.');
             }
         } else {
-            setFlash('error', 'Erreur de téléchargement du fichier.');
+            setFlash('error', 'Erreur lors du déplacement du fichier.');
         }
         redirect('dossiers/show/' . $id);
     }
@@ -299,6 +328,36 @@ class DossierController
 
         (new ActivityLog())->log($id, $_SESSION['user']['id'], "A supprimé la pièce jointe: " . $fichier['nom']);
         setFlash('success', 'Pièce jointe supprimée.');
+        redirect('dossiers/show/' . $id);
+    }
+
+    public function unshare(int $id): void
+    {
+        requireRole('Responsable de dossier', 'Administrateur');
+        $dossier = $this->findOrFail($id);
+        $this->requireNotSigned($dossier);
+
+        $isAdmin = $_SESSION['user']['role'] === 'Administrateur';
+        if (!$isAdmin && (int)$dossier['cree_par'] !== (int)$_SESSION['user']['id']) {
+            setFlash('error', 'Seul le responsable du dossier peut gérer les partages.');
+            redirect('dossiers/show/' . $id);
+        }
+
+        $idUser = (int)($_POST['id_user'] ?? 0);
+        if ($idUser <= 0) {
+            setFlash('error', 'Utilisateur invalide.');
+            redirect('dossiers/show/' . $id);
+        }
+
+        $partageModel = new PartageDossier();
+        $target = (new User())->findById($idUser);
+        $partageModel->removePartage($id, $idUser);
+
+        if ($target) {
+            (new ActivityLog())->log($id, $_SESSION['user']['id'], 'A retiré le partage de ' . $target['prenom'] . ' ' . $target['nom']);
+        }
+
+        setFlash('success', 'Accès révoqué.');
         redirect('dossiers/show/' . $id);
     }
 
@@ -389,29 +448,25 @@ class DossierController
         $this->requireNotSigned($dossier);
 
         $idAction = (int)($_POST['id_action'] ?? 0);
-
         if ($idAction <= 0) {
             setFlash('error', 'Action invalide.');
             redirect('dossiers/show/' . $id);
         }
 
+        $isAdmin = $_SESSION['user']['role'] === 'Administrateur';
+        $isChef  = $_SESSION['user']['role'] === 'Responsable de dossier' || $isAdmin;
         $actionModel = new Action();
 
+        // --- Modification complète (nom, dates, priorité…) ---
         if (isset($_POST['nom'])) {
-            $isAdmin = $_SESSION['user']['role'] === 'Administrateur';
-            $isChef = $_SESSION['user']['role'] === 'Responsable de dossier' || $isAdmin;
-            if (!$isChef) {
-                setFlash('error', 'Accès refusé.');
-                redirect('dossiers/show/' . $id);
-            }
-
             $nom = trim($_POST['nom']);
             if (empty($nom)) {
                 setFlash('error', 'Le nom de l\'action est obligatoire.');
                 redirect('dossiers/show/' . $id);
             }
 
-            $ok = $actionModel->updateFull($idAction, [
+            $payload = [
+                'id_action'   => $idAction,
                 'nom'         => $nom,
                 'description' => $_POST['description'] ?? '',
                 'date_debut'  => $_POST['date_debut'] ?? '',
@@ -420,15 +475,30 @@ class DossierController
                 'id_statut'   => (int) ($_POST['id_statut'] ?? 1),
                 'id_priorite' => (int) ($_POST['id_priorite'] ?? 2),
                 'assign_to'   => $_POST['assign_to'] ?? '',
-            ]);
+            ];
 
-            if ($ok) {
-                (new ActivityLog())->log($id, $_SESSION['user']['id'], 'A modifié l\'action: ' . $nom);
-                setFlash('success', 'Action mise à jour avec succès.');
+            if (!$isChef) {
+                // Collaborateur : soumet une demande
+                $dv = new DemandeValidation();
+                if ($dv->demandeExiste($id, 'modif_action', 'id_action', $idAction)) {
+                    setFlash('error', 'Une demande de modification est déjà en attente pour cette action.');
+                    redirect('dossiers/show/' . $id);
+                }
+                $dv->soumettre($id, $_SESSION['user']['id'], 'modif_action', $payload);
+                (new ActivityLog())->log($id, $_SESSION['user']['id'], 'A soumis une demande de modification pour l\'action : ' . $nom);
+                setFlash('success', 'Votre demande de modification a été soumise au responsable.');
             } else {
-                setFlash('error', 'Erreur lors de la mise à jour de l\'action.');
+                // Chef / Admin : modification directe
+                $ok = $actionModel->updateFull($idAction, $payload);
+                if ($ok) {
+                    (new ActivityLog())->log($id, $_SESSION['user']['id'], 'A modifié l\'action : ' . $nom);
+                    setFlash('success', 'Action mise à jour avec succès.');
+                } else {
+                    setFlash('error', 'Erreur lors de la mise à jour de l\'action.');
+                }
             }
         } else {
+            // --- Changement de statut rapide (select) : direct pour tous ---
             $idStatut = (int)($_POST['id_statut'] ?? 0);
             if ($idStatut > 0) {
                 $actionModel->updateStatut($idAction, $idStatut);
@@ -460,5 +530,177 @@ class DossierController
         }
 
         redirect('dossiers/show/' . $id);
+    }
+
+    /**
+     * Soumet une demande de changement de workflow (pour les Collaborateurs).
+     * Les Responsables/Admin font le changement directement via edit().
+     */
+    public function demandeWorkflow(int $id): void
+    {
+        requireAuth();
+        $dossier = $this->findOrFail($id);
+        $this->requireNotSigned($dossier);
+
+        $isAdmin = $_SESSION['user']['role'] === 'Administrateur';
+        $isChef  = $_SESSION['user']['role'] === 'Responsable de dossier' || $isAdmin;
+
+        // Les chefs modifient directement via edit()
+        if ($isChef) {
+            setFlash('error', 'Utilisez la modification du dossier pour changer le workflow.');
+            redirect('dossiers/show/' . $id);
+        }
+
+        $idWorkflow = (int)($_POST['id_workflow'] ?? 0);
+        if ($idWorkflow <= 0) {
+            setFlash('error', 'Workflow invalide.');
+            redirect('dossiers/show/' . $id);
+        }
+
+        $dv = new DemandeValidation();
+        if ($dv->demandeExiste($id, 'changement_workflow', 'id_workflow', $idWorkflow)) {
+            setFlash('error', 'Une demande pour ce workflow est déjà en attente.');
+            redirect('dossiers/show/' . $id);
+        }
+
+        // Récupérer le libellé du workflow demandé
+        $allWorkflows = (new Workflow())->getAllStatuts();
+        $libelle = '';
+        foreach ($allWorkflows as $wf) {
+            if ((int)$wf['id_workflow'] === $idWorkflow) {
+                $libelle = $wf['libelle'];
+                break;
+            }
+        }
+
+        $dv->soumettre($id, $_SESSION['user']['id'], 'changement_workflow', [
+            'id_workflow'      => $idWorkflow,
+            'workflow_libelle' => $libelle,
+        ]);
+        (new ActivityLog())->log($id, $_SESSION['user']['id'], 'A demandé un changement de workflow vers : ' . $libelle);
+        setFlash('success', 'Votre demande de changement de workflow a été soumise au responsable.');
+        redirect('dossiers/show/' . $id);
+    }
+
+    // =========================================================
+    // VALIDATION DES DEMANDES
+    // =========================================================
+
+    /**
+     * Approuve une demande en attente et exécute l'action associée.
+     * Accessible uniquement au créateur du dossier ou à un Administrateur.
+     */
+    public function approuverDemande(int $idDossier): void
+    {
+        requireRole('Responsable de dossier', 'Administrateur');
+        $dossier = $this->findOrFail($idDossier);
+        $this->requireNotSigned($dossier);
+
+        $isAdmin = $_SESSION['user']['role'] === 'Administrateur';
+        if (!$isAdmin && (int)$dossier['cree_par'] !== (int)$_SESSION['user']['id']) {
+            setFlash('error', 'Accès refusé.');
+            redirect('dossiers/show/' . $idDossier);
+        }
+
+        $idDemande = (int)($_POST['id_demande'] ?? 0);
+        $dv = new DemandeValidation();
+        $demande = $dv->findById($idDemande);
+
+        if (!$demande || (int)$demande['id_dossier'] !== $idDossier) {
+            setFlash('error', 'Demande introuvable.');
+            redirect('dossiers/show/' . $idDossier);
+        }
+
+        $payload = $demande['payload'];
+        $log = new ActivityLog();
+
+        switch ($demande['type_demande']) {
+
+            case 'upload_fichier':
+                // Déplacer le fichier de pending/ vers uploads/
+                $cheminTmp = __DIR__ . '/../public' . $payload['chemin_tmp'];
+                $nom = basename($payload['nom']);
+                $dest = __DIR__ . '/../public/uploads/' . time() . '_' . $nom;
+                if (file_exists($cheminTmp) && rename($cheminTmp, $dest)) {
+                    $fichierModel = new Fichier();
+                    $idFichier = $fichierModel->uploadFichier([
+                        'nom'    => $payload['nom'],
+                        'chemin' => str_replace(__DIR__ . '/../public', '', $dest),
+                        'taille' => $payload['taille'],
+                    ], (int)$demande['id_demandeur']);
+                    if ($idFichier) {
+                        $fichierModel->linkToDossier($idFichier, $idDossier);
+                    }
+                    $log->log($idDossier, $_SESSION['user']['id'], 'A approuvé l\'upload de : ' . $payload['nom']);
+                } else {
+                    setFlash('error', 'Fichier temporaire introuvable. La demande sera rejetée.');
+                    $dv->resoudre($idDemande, $_SESSION['user']['id'], 'rejetee', 'Fichier temporaire introuvable.');
+                    redirect('dossiers/show/' . $idDossier);
+                }
+                break;
+
+            case 'modif_action':
+                $actionModel = new Action();
+                $actionModel->updateFull((int)$payload['id_action'], $payload);
+                $log->log($idDossier, $_SESSION['user']['id'], 'A approuvé la modification de l\'action : ' . $payload['nom']);
+                break;
+
+            case 'changement_workflow':
+                $nouvelleEtape = (int)($payload['id_workflow'] ?? 1);
+                $this->dossierModel->update($idDossier, [
+                    'nom'         => $dossier['nom'],
+                    'description' => $dossier['description'] ?? '',
+                    'date_debut'  => $dossier['date_debut']  ?? '',
+                    'date_fin'    => $dossier['date_fin']    ?? '',
+                    'date_limite' => $dossier['date_limite'] ?? '',
+                    'id_statut'   => (int)($dossier['id_statut'] ?? 1),
+                    'id_workflow' => $nouvelleEtape,
+                    'droit_depot' => (int)($dossier['droit_depot'] ?? 1),
+                ], $_SESSION['user']['id'], $isAdmin);
+                $log->log($idDossier, $_SESSION['user']['id'], 'A approuvé le passage du workflow à : ' . ($payload['workflow_libelle'] ?? $nouvelleEtape));
+                break;
+        }
+
+        $dv->resoudre($idDemande, $_SESSION['user']['id'], 'approuvee');
+        setFlash('success', 'Demande approuvée et appliquée.');
+        redirect('dossiers/show/' . $idDossier);
+    }
+
+    /**
+     * Rejette une demande en attente.
+     */
+    public function rejeterDemande(int $idDossier): void
+    {
+        requireRole('Responsable de dossier', 'Administrateur');
+        $dossier = $this->findOrFail($idDossier);
+
+        $isAdmin = $_SESSION['user']['role'] === 'Administrateur';
+        if (!$isAdmin && (int)$dossier['cree_par'] !== (int)$_SESSION['user']['id']) {
+            setFlash('error', 'Accès refusé.');
+            redirect('dossiers/show/' . $idDossier);
+        }
+
+        $idDemande   = (int)($_POST['id_demande'] ?? 0);
+        $commentaire = trim($_POST['commentaire'] ?? '');
+        $dv = new DemandeValidation();
+        $demande = $dv->findById($idDemande);
+
+        if (!$demande || (int)$demande['id_dossier'] !== $idDossier) {
+            setFlash('error', 'Demande introuvable.');
+            redirect('dossiers/show/' . $idDossier);
+        }
+
+        // Supprimer le fichier temporaire si c'est un upload rejeté
+        if ($demande['type_demande'] === 'upload_fichier') {
+            $cheminTmp = __DIR__ . '/../public' . ($demande['payload']['chemin_tmp'] ?? '');
+            if (file_exists($cheminTmp)) {
+                unlink($cheminTmp);
+            }
+        }
+
+        $dv->resoudre($idDemande, $_SESSION['user']['id'], 'rejetee', $commentaire);
+        (new ActivityLog())->log($idDossier, $_SESSION['user']['id'], 'A rejeté une demande de validation.');
+        setFlash('success', 'Demande rejetée.');
+        redirect('dossiers/show/' . $idDossier);
     }
 }

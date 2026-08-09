@@ -17,6 +17,11 @@ class Workflow
         return $this->pdo->query('SELECT * FROM statut_workflow ORDER BY id_workflow')->fetchAll();
     }
 
+    public function getAll(): array
+    {
+        return $this->getAllStatuts();
+    }
+
     public function getStatutById(int $id): ?array
     {
         $stmt = $this->pdo->prepare('SELECT * FROM statut_workflow WHERE id_workflow = :id');

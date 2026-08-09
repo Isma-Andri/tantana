@@ -46,6 +46,7 @@ CREATE TABLE dossiers (
     id_statut    INT UNSIGNED NOT NULL DEFAULT 1,
     id_workflow  INT UNSIGNED NOT NULL DEFAULT 1,
     cree_par     INT UNSIGNED NOT NULL,
+    droit_depot  TINYINT UNSIGNED NOT NULL DEFAULT 1,
     CONSTRAINT fk_dossier_statut   FOREIGN KEY (id_statut) REFERENCES statut(id_statut) ON UPDATE CASCADE ON DELETE RESTRICT,
     CONSTRAINT fk_dossier_workflow FOREIGN KEY (id_workflow) REFERENCES statut_workflow(id_workflow) ON UPDATE CASCADE ON DELETE RESTRICT,
     CONSTRAINT fk_dossier_createur FOREIGN KEY (cree_par)  REFERENCES users(id_user)   ON UPDATE CASCADE ON DELETE RESTRICT

@@ -72,4 +72,11 @@ class Fichier
         $stmt = $this->pdo->prepare('DELETE FROM fichier WHERE id_fichier = :id_fichier');
         return $stmt->execute([':id_fichier' => $idFichier]);
     }
+
+    public function findById(int $idFichier): ?array
+    {
+        $stmt = $this->pdo->prepare('SELECT * FROM fichier WHERE id_fichier = :id LIMIT 1');
+        $stmt->execute([':id' => $idFichier]);
+        return $stmt->fetch() ?: null;
+    }
 }

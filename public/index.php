@@ -115,11 +115,17 @@ if ($seg0 === 'dossiers') {
         $seg1 === 'edit'   && $id > 0 && $method === 'POST' => $ctrl->update($id),
         $seg1 === 'delete' && $id > 0 && $method === 'POST' => $ctrl->delete($id),
         $seg1 === 'upload' && $id > 0 && $method === 'POST' => $ctrl->upload($id),
+        $seg1 === 'delete-file' && $id > 0 && $method === 'POST' => $ctrl->deleteFile($id),
         $seg1 === 'share'  && $id > 0 && $method === 'POST' => $ctrl->share($id),
+        $seg1 === 'unshare' && $id > 0 && $method === 'POST' => $ctrl->unshare($id),
+        $seg1 === 'approuver-demande' && $id > 0 && $method === 'POST' => $ctrl->approuverDemande($id),
+        $seg1 === 'rejeter-demande'   && $id > 0 && $method === 'POST' => $ctrl->rejeterDemande($id),
+        $seg1 === 'demande-workflow'  && $id > 0 && $method === 'POST' => $ctrl->demandeWorkflow($id),
         $seg1 === 'export' && $id > 0 && $method === 'GET'  => $ctrl->exportPdf($id),
         $seg1 === 'comment'       && $id > 0 && $method === 'POST' => $ctrl->comment($id),
         $seg1 === 'add-action'    && $id > 0 && $method === 'POST' => $ctrl->addAction($id),
         $seg1 === 'update-action' && $id > 0 && $method === 'POST' => $ctrl->updateAction($id),
+        $seg1 === 'delete-action' && $id > 0 && $method === 'POST' => $ctrl->deleteAction($id),
         default                                             => $ctrl->index(),
     };
     exit;

@@ -5,123 +5,322 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title><?= e($pageTitle ?? 'Tantana') ?> — Tantana</title>
 
+    <!-- Theme detection script (prevents theme flashing) -->
+    <script>
+        if (localStorage.getItem('theme') === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+            document.documentElement.classList.add('dark');
+        } else {
+            document.documentElement.classList.remove('dark');
+        }
+    </script>
+
     <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link href="https://fonts.googleapis.com/css2?family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,700;0,8..60,800;1,8..60,400&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
     tailwind.config = {
+        darkMode: 'class',
         theme: {
             extend: {
                 fontFamily: {
-                    display: ['Source Serif 4', 'Georgia', 'serif'],
-                    body:    ['Inter', 'system-ui', 'sans-serif'],
+                    sans: ['Inter', 'system-ui', 'sans-serif'],
                 },
                 colors: {
-                    ink:  { DEFAULT: '#0f172a', 50: '#fcfbf9', 100: '#e2e8f0', 200: '#cbd5e1', 500: '#64748b' },
-                    jade: { DEFAULT: '#064e3b', light: '#ecfdf5', dark: '#047857' },
-                    sun:  { DEFAULT: '#d97706', light: '#fffbeb' },
-                    rose: { DEFAULT: '#dc2626', light: '#fef2f2' },
+                    border: 'hsl(var(--border))',
+                    input: 'hsl(var(--input))',
+                    ring: 'hsl(var(--ring))',
+                    background: 'hsl(var(--background))',
+                    foreground: 'hsl(var(--foreground))',
+                    primary: {
+                        DEFAULT: 'hsl(var(--primary))',
+                        foreground: 'hsl(var(--primary-foreground))',
+                    },
+                    secondary: {
+                        DEFAULT: 'hsl(var(--secondary))',
+                        foreground: 'hsl(var(--secondary-foreground))',
+                    },
+                    destructive: {
+                        DEFAULT: 'hsl(var(--destructive))',
+                        foreground: 'hsl(var(--destructive-foreground))',
+                    },
+                    muted: {
+                        DEFAULT: 'hsl(var(--muted))',
+                        foreground: 'hsl(var(--muted-foreground))',
+                    },
+                    accent: {
+                        DEFAULT: 'hsl(var(--accent))',
+                        foreground: 'hsl(var(--accent-foreground))',
+                    },
+                    popover: {
+                        DEFAULT: 'hsl(var(--popover))',
+                        foreground: 'hsl(var(--popover-foreground))',
+                    },
+                    card: {
+                        DEFAULT: 'hsl(var(--card))',
+                        foreground: 'hsl(var(--card-foreground))',
+                    },
+                    // Preserve and adapt semantic color mappings
+                    jade: {
+                        DEFAULT: 'hsl(var(--jade))',
+                        foreground: 'hsl(var(--jade-foreground))',
+                    },
+                    sun: {
+                        DEFAULT: 'hsl(var(--sun))',
+                        foreground: 'hsl(var(--sun-foreground))',
+                    },
+                    rose: {
+                        DEFAULT: 'hsl(var(--rose))',
+                        foreground: 'hsl(var(--rose-foreground))',
+                    }
+                },
+                borderRadius: {
+                    lg: 'var(--radius)',
+                    md: 'calc(var(--radius) - 2px)',
+                    sm: 'calc(var(--radius) - 4px)'
                 },
                 boxShadow: {
-                    card: '0 1px 3px rgba(15,23,42,.04), 0 4px 16px rgba(15,23,42,.03)',
-                    lift: '0 8px 32px rgba(15,23,42,.08)',
-                },
+                    card: '0 1px 3px 0 rgba(0, 0, 0, 0.05), 0 1px 2px 0 rgba(0, 0, 0, 0.03)',
+                    lift: '0 4px 12px 0 rgba(0, 0, 0, 0.05), 0 2px 4px 0 rgba(0, 0, 0, 0.03)',
+                }
             }
         }
     }
     </script>
 
     <style>
+        :root {
+            --background: 0 0% 100%;
+            --foreground: 240 10% 3.9%;
+            --card: 0 0% 100%;
+            --card-foreground: 240 10% 3.9%;
+            --popover: 0 0% 100%;
+            --popover-foreground: 240 10% 3.9%;
+            --primary: 240 5.9% 10%;
+            --primary-foreground: 0 0% 98%;
+            --secondary: 240 4.8% 95.9%;
+            --secondary-foreground: 240 5.9% 10%;
+            --muted: 240 4.8% 95.9%;
+            --muted-foreground: 240 3.8% 46.1%;
+            --accent: 240 4.8% 95.9%;
+            --accent-foreground: 240 5.9% 10%;
+            --destructive: 346.8 77.2% 49.8%;
+            --destructive-foreground: 355.7 100% 97.3%;
+            --border: 240 5.9% 90%;
+            --input: 240 5.9% 90%;
+            --ring: 240 5.9% 10%;
+            --radius: 0.5rem;
+
+            /* Shadcn-style custom semantic colors */
+            --jade: 142.1 76.2% 36.3%;
+            --jade-foreground: 355.7 100% 97.3%;
+            --sun: 35.2 91.7% 32.9%;
+            --sun-foreground: 35.2 100% 98%;
+            --rose: 346.8 77.2% 49.8%;
+            --rose-foreground: 355.7 100% 97.3%;
+        }
+
+        .dark {
+            --background: 240 10% 3.9%;
+            --foreground: 0 0% 98%;
+            --card: 240 10% 3.9%;
+            --card-foreground: 0 0% 98%;
+            --popover: 240 10% 3.9%;
+            --popover-foreground: 0 0% 98%;
+            --primary: 0 0% 98%;
+            --primary-foreground: 240 5.9% 10%;
+            --secondary: 240 3.7% 15.9%;
+            --secondary-foreground: 0 0% 98%;
+            --muted: 240 3.7% 15.9%;
+            --muted-foreground: 240 5% 64.9%;
+            --accent: 240 3.7% 15.9%;
+            --accent-foreground: 0 0% 98%;
+            --destructive: 346.8 77.2% 49.8%;
+            --destructive-foreground: 355.7 100% 97.3%;
+            --border: 240 3.7% 15.9%;
+            --input: 240 3.7% 15.9%;
+            --ring: 240 4.9% 83.9%;
+
+            /* Semantic dark colors */
+            --jade: 142.1 70.6% 45.3%;
+            --jade-foreground: 144.9 80.4% 10%;
+            --sun: 37.9 77.2% 41.8%;
+            --sun-foreground: 35.2 100% 10%;
+            --rose: 346.8 72% 55%;
+            --rose-foreground: 355.7 100% 97.3%;
+        }
+
         * { font-family: 'Inter', system-ui, sans-serif; }
-        .font-display { font-family: 'Source Serif 4', Georgia, serif; }
 
         body {
-            background-color: #fcfbf9;
-            background-image:
-                radial-gradient(circle at 1px 1px, rgba(6,78,59,0.04) 1px, transparent 0);
-            background-size: 24px 24px;
+            background-color: hsl(var(--background));
+            color: hsl(var(--foreground));
         }
 
         .page-loader {
-            position: fixed; top: 0; left: 0; height: 3px; width: 0;
-            background: #064e3b;
-            animation: load .4s ease forwards;
+            position: fixed; top: 0; left: 0; height: 2px; width: 0;
+            background: hsl(var(--primary));
+            animation: load .3s ease forwards;
             z-index: 9999;
         }
         @keyframes load { to { width: 100%; } }
 
-        .page-in { animation: fadeUp .35s cubic-bezier(0.16, 1, 0.3, 1) both; }
-        @keyframes fadeUp { from { opacity:0; transform:translateY(12px); } to { opacity:1; transform:none; } }
+        .page-in { animation: fadeUp .25s cubic-bezier(0.16, 1, 0.3, 1) both; }
+        @keyframes fadeUp { from { opacity:0; transform:translateY(6px); } to { opacity:1; transform:none; } }
 
-        .float-slow { animation: floatSlow 6s ease-in-out infinite; }
-        @keyframes floatSlow { 0%, 100% { transform: translateY(0px); } 50% { transform: translateY(-8px); } }
+        .hover-lift { transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.2s ease; }
+        .hover-lift:hover { transform: translateY(-2px); }
 
-        .pulse-subtle { animation: pulseSubtle 3s ease-in-out infinite; }
-        @keyframes pulseSubtle { 0%, 100% { opacity: 1; } 50% { opacity: 0.75; } }
-
-        .hover-lift { transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.25s ease; }
-        .hover-lift:hover { transform: translateY(-4px); box-shadow: 0 12px 24px -4px rgba(15, 23, 42, 0.08); }
-
-        .badge { display:inline-flex; align-items:center; gap:.35rem; padding:.25rem .75rem; border-radius:99px; font-size:.75rem; font-weight:600; letter-spacing:.02em; transition: all .2s; }
-        .badge-jade { background:#ecfdf5; color:#065f46; border:1px solid #a7f3d0; }
-        .badge-sun  { background:#fffbeb; color:#b45309; border:1px solid #fde68a; }
-        .badge-rose { background:#fef2f2; color:#b91c1c; border:1px solid #fecaca; }
-        .badge-gray { background:#f1f5f9; color:#475569; border:1px solid #e2e8f0; }
+        .badge {
+            display: inline-flex; align-items: center; gap: .35rem; padding: .25rem .75rem;
+            border-radius: 9999px; font-size: .75rem; font-weight: 600;
+            transition: all .2s; border: 1px solid transparent;
+        }
+        .badge-jade {
+            background-color: rgba(16, 185, 129, 0.1);
+            color: #10b981;
+            border-color: rgba(16, 185, 129, 0.2);
+        }
+        .badge-sun {
+            background-color: rgba(245, 158, 11, 0.1);
+            color: #f59e0b;
+            border-color: rgba(245, 158, 11, 0.2);
+        }
+        .badge-rose {
+            background-color: rgba(239, 68, 68, 0.1);
+            color: #ef4444;
+            border-color: rgba(239, 68, 68, 0.2);
+        }
+        .badge-gray {
+            background-color: hsl(var(--secondary));
+            color: hsl(var(--secondary-foreground));
+            border-color: hsl(var(--border));
+        }
 
         .t-input {
-            width: 100%; border: 1.5px solid #e2e8f0; border-radius: .5rem;
-            padding: .65rem 1rem; font-size: .9rem;
-            transition: border-color .2s, box-shadow .2s;
-            background: #ffffff; color: #0f172a; outline: none;
+            width: 100%; border: 1px solid hsl(var(--border)); border-radius: var(--radius);
+            padding: .5rem .75rem; font-size: .875rem;
+            transition: border-color .15s, box-shadow .15s;
+            background: hsl(var(--background)); color: hsl(var(--foreground)); outline: none;
         }
-        .t-input:focus { border-color: #064e3b; box-shadow: 0 0 0 3px rgba(6,78,59,.12); background:#fff; }
+        .t-input:focus {
+            border-color: hsl(var(--ring));
+            box-shadow: 0 0 0 2px rgba(0, 0, 0, 0.05);
+        }
 
         .btn-primary {
-            display: inline-flex; align-items: center; gap: .5rem;
-            background: #064e3b; color: #fff;
-            padding: .65rem 1.4rem; border-radius: .5rem;
-            font-weight: 600; font-size: .9rem;
-            transition: background .2s, transform .15s, box-shadow .2s;
+            display: inline-flex; align-items: center; justify-content: center; gap: .5rem;
+            background: hsl(var(--primary)); color: hsl(var(--primary-foreground));
+            padding: .5rem 1rem; border-radius: var(--radius);
+            font-weight: 500; font-size: .875rem;
+            transition: opacity .15s, transform .1s;
             cursor: pointer; border: none; text-decoration: none;
         }
-        .btn-primary:hover { background: #047857; transform: translateY(-1px); box-shadow: 0 4px 12px rgba(6,78,59,.2); }
-        .btn-primary:active { transform: scale(0.97); }
+        .btn-primary:hover { opacity: 0.9; }
+        .btn-primary:active { transform: scale(0.98); }
 
         .btn-jade {
-            display: inline-flex; align-items: center; gap: .5rem;
-            background: #064e3b; color: #fff;
-            padding: .65rem 1.4rem; border-radius: .5rem;
-            font-weight: 600; font-size: .9rem;
-            transition: background .2s, transform .15s;
+            display: inline-flex; align-items: center; justify-content: center; gap: .5rem;
+            background: hsl(var(--jade)); color: hsl(var(--jade-foreground));
+            padding: .5rem 1rem; border-radius: var(--radius);
+            font-weight: 500; font-size: .875rem;
+            transition: opacity .15s, transform .1s;
             cursor: pointer; border: none; text-decoration: none;
         }
-        .btn-jade:hover { background: #047857; transform: translateY(-1px); }
-        .btn-jade:active { transform: scale(0.97); }
+        .btn-jade:hover { opacity: 0.9; }
+        .btn-jade:active { transform: scale(0.98); }
 
         .btn-ghost {
-            display: inline-flex; align-items: center; gap: .5rem;
-            background: transparent; color: #334155;
-            padding: .6rem 1.2rem; border-radius: .5rem;
-            font-weight: 500; font-size: .9rem;
-            border: 1.5px solid #cbd5e1;
-            transition: border-color .2s, background .2s, transform .15s;
+            display: inline-flex; align-items: center; justify-content: center; gap: .5rem;
+            background: transparent; color: hsl(var(--foreground));
+            padding: .5rem 1rem; border-radius: var(--radius);
+            font-weight: 500; font-size: .875rem;
+            border: 1px solid hsl(var(--border));
+            transition: background-color .15s, color .15s, transform .1s;
             cursor: pointer; text-decoration: none;
         }
-        .btn-ghost:hover { border-color: #94a3b8; background: #f1f5f9; }
-        .btn-ghost:active { transform: scale(0.97); }
+        .btn-ghost:hover { background: hsl(var(--accent)); color: hsl(var(--accent-foreground)); }
+        .btn-ghost:active { transform: scale(0.98); }
 
         .btn-danger {
-            display: inline-flex; align-items: center; gap: .5rem;
-            background: #fef2f2; color: #b91c1c;
-            padding: .6rem 1.2rem; border-radius: .5rem;
-            font-weight: 600; font-size: .875rem;
-            border: 1.5px solid #fecaca;
-            transition: background .2s, transform .15s;
-            cursor: pointer; text-decoration: none;
+            display: inline-flex; align-items: center; justify-content: center; gap: .5rem;
+            background: hsl(var(--destructive)); color: hsl(var(--destructive-foreground));
+            padding: .5rem 1rem; border-radius: var(--radius);
+            font-weight: 500; font-size: .875rem;
+            transition: opacity .15s, transform .1s;
+            cursor: pointer; text-decoration: none; border: none;
         }
-        .btn-danger:hover { background: #fee2e2; }
-        .btn-danger:active { transform: scale(0.97); }
+        .btn-danger:hover { opacity: 0.9; }
+        .btn-danger:active { transform: scale(0.98); }
+
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: hsl(var(--background));
+        }
+        ::-webkit-scrollbar-thumb {
+            background: hsl(var(--muted-foreground));
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: hsl(var(--foreground));
+        }
+
+        /* Legacy government theme class mappings to Shadcn UI tokens */
+        .bg-white {
+            background-color: hsl(var(--card)) !important;
+            color: hsl(var(--card-foreground)) !important;
+        }
+        .bg-slate-50, .bg-slate-100, .bg-ink-50, .bg-slate-100\/50, .bg-slate-50\/80 {
+            background-color: hsl(var(--secondary)) !important;
+            color: hsl(var(--secondary-foreground)) !important;
+        }
+        .text-slate-900, .text-ink, .text-slate-800, .text-slate-700, .text-slate-600 {
+            color: hsl(var(--foreground)) !important;
+        }
+        .text-slate-500, .text-ink-500, .text-slate-400, .text-ink-400 {
+            color: hsl(var(--muted-foreground)) !important;
+        }
+        .border-slate-100, .border-slate-200, .border-slate-200\/80, .border-slate-200\/60, .border-ink-100, .border-slate-300 {
+            border-color: hsl(var(--border)) !important;
+        }
+        .font-display {
+            font-family: 'Inter', system-ui, sans-serif !important;
+        }
+        .shadow-card {
+            box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.05), 0 1px 2px 0 rgba(0, 0, 0, 0.03) !important;
+            border: 1px solid hsl(var(--border)) !important;
+        }
+        .dark .shadow-card {
+            box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.3), 0 1px 2px 0 rgba(0, 0, 0, 0.2) !important;
+        }
+        .bg-emerald-50, .bg-jade-light, .bg-emerald-50\/60 {
+            background-color: rgba(16, 185, 129, 0.1) !important;
+            color: #10b981 !important;
+            border-color: rgba(16, 185, 129, 0.2) !important;
+        }
+        .bg-sun-light {
+            background-color: rgba(245, 158, 11, 0.1) !important;
+            color: #f59e0b !important;
+            border-color: rgba(245, 158, 11, 0.2) !important;
+        }
+        .bg-rose-light {
+            background-color: rgba(239, 68, 68, 0.1) !important;
+            color: #ef4444 !important;
+            border-color: rgba(239, 68, 68, 0.2) !important;
+        }
+        dialog {
+            background: hsl(var(--card)) !important;
+            color: hsl(var(--card-foreground)) !important;
+            border: 1px solid hsl(var(--border)) !important;
+            border-radius: var(--radius) !important;
+        }
+        dialog::backdrop {
+            background: rgba(0, 0, 0, 0.4) !important;
+            backdrop-filter: blur(4px) !important;
+        }
     </style>
 </head>
-<body class="bg-[#fcfbf9] min-h-full text-slate-900">
+<body class="bg-background min-h-full text-foreground antialiased">
 <div class="page-loader"></div>

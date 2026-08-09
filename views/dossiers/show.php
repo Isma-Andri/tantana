@@ -98,6 +98,30 @@ if ($dossier['date_debut'] && $dossier['date_limite']) {
                 </div>
             </div>
 
+            <!-- Demande de changement de workflow (visible Collaborateur uniquement, dossier non signé) -->
+            <?php if (!$isChef && (int)($dossier['id_workflow'] ?? 0) !== 3): ?>
+            <div class="bg-white rounded-2xl shadow-card p-5 hover-lift border border-ink-100">
+                <h2 class="text-sm font-semibold text-ink mb-3 uppercase tracking-wider">Demander un avancement</h2>
+                <?php
+                    $workflows = (new Workflow())->getAllStatuts();
+                    $wfActuel  = (int)($dossier['id_workflow'] ?? 1);
+                ?>
+                <div class="space-y-3">
+                    <p class="text-xs text-ink-500">
+                        Workflow actuel :
+                        <strong class="text-ink"><?= e($dossier['workflow_libelle'] ?? '—') ?></strong>
+                    </p>
+                    <p class="text-xs text-ink-400 italic">Soumettez une demande pour que le responsable fasse avancer le dossier.</p>
+                    <button type="button"
+                            onclick="openWorkflowRequestModal()"
+                            class="btn-primary text-xs py-2 px-4 w-full justify-center">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="w-3.5 h-3.5"><polyline points="9 18 15 12 9 6"/></svg>
+                        Demander un changement de workflow
+                    </button>
+                </div>
+            </div>
+            <?php endif; ?>
+
             <!-- Actions (Tâches du dossier) -->
             <div class="bg-white rounded-2xl shadow-card p-7 hover-lift">
                 <div class="flex items-center justify-between mb-5">
@@ -142,7 +166,7 @@ if ($dossier['date_debut'] && $dossier['date_limite']) {
                                     </div>
                                     
                                     <div class="flex items-center gap-2 flex-shrink-0">
-                                        <?php if ($isChef && (int)($dossier['id_workflow'] ?? 0) !== 3): ?>
+                                        <?php if ((int)($dossier['id_workflow'] ?? 0) !== 3): ?>
                                             <button type="button" 
                                                     onclick='openEditActionModal(<?= json_encode($act, JSON_HEX_APOS | JSON_HEX_QUOT) ?>)'
                                                     class="p-1.5 text-ink-500 hover:text-jade hover:bg-jade-light rounded-lg transition-colors"
@@ -400,7 +424,23 @@ if ($dossier['date_debut'] && $dossier['date_limite']) {
                                     <p class="font-medium text-ink"><?= e($p['prenom'] . ' ' . $p['nom']) ?></p>
                                     <p class="text-xs text-ink-500"><?= e($p['email']) ?></p>
                                 </div>
-                                <span class="px-2 py-1 bg-ink-100 text-ink-600 rounded text-xs font-semibold"><?= e($p['niveau_acces']) ?></span>
+                                <div class="flex items-center gap-2 flex-shrink-0">
+                                    <span class="px-2 py-1 bg-ink-100 text-ink-600 rounded text-xs font-semibold"><?= e($p['niveau_acces']) ?></span>
+                                    <?php if (($isOwner || $isAdmin) && (int)($dossier['id_workflow'] ?? 0) !== 3): ?>
+                                    <form action="/dossiers/unshare/<?= $dossier['id_dossier'] ?>" method="POST"
+                                          onsubmit="return confirm('Révoquer l\'accès de <?= e($p['prenom'] . ' ' . $p['nom']) ?> ?')"
+                                          class="inline">
+                                        <input type="hidden" name="id_user" value="<?= $p['id_user'] ?>">
+                                        <button type="submit"
+                                                class="text-ink-400 hover:text-rose p-1 rounded transition-colors"
+                                                title="Révoquer l'accès">
+                                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="w-3.5 h-3.5">
+                                                <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+                                            </svg>
+                                        </button>
+                                    </form>
+                                    <?php endif; ?>
+                                </div>
                             </li>
                         <?php endforeach; ?>
                     </ul>
@@ -423,6 +463,81 @@ if ($dossier['date_debut'] && $dossier['date_limite']) {
                 <?php else: ?>
                 <p class="text-xs text-ink-500 italic mt-4 pt-4 border-t border-ink-100">Le dossier est signé. Les autorisations d'accès ne peuvent plus être modifiées.</p>
                 <?php endif; ?>
+            </div>
+            <?php endif; ?>
+
+            <!-- Demandes en attente de validation (visible créateur/admin) -->
+            <?php if (!empty($demandesEnAttente)): ?>
+            <div class="bg-white rounded-2xl shadow-card p-5 mt-6 hover-lift border-l-4 border-sun">
+                <div class="flex items-center gap-2 mb-4">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="w-4 h-4 text-sun flex-shrink-0">
+                        <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+                    </svg>
+                    <h2 class="text-sm font-semibold text-ink uppercase tracking-wider">Demandes en attente</h2>
+                    <span class="ml-auto badge badge-sun"><?= count($demandesEnAttente) ?></span>
+                </div>
+
+                <ul class="space-y-4">
+                <?php foreach ($demandesEnAttente as $dmd): ?>
+                    <?php
+                        $typeLabels = [
+                            'upload_fichier'      => 'Upload de fichier',
+                            'modif_action'        => 'Modification d\'action',
+                            'changement_workflow' => 'Changement de workflow',
+                        ];
+                        $typeLabel = $typeLabels[$dmd['type_demande']] ?? $dmd['type_demande'];
+                        $payload   = $dmd['payload'];
+                    ?>
+                    <li class="p-4 bg-amber-50 border border-amber-200 rounded-xl">
+                        <div class="flex items-start justify-between gap-3 mb-2">
+                            <div>
+                                <span class="text-xs font-bold uppercase tracking-wider text-amber-700"><?= e($typeLabel) ?></span>
+                                <p class="text-sm font-semibold text-ink mt-0.5">
+                                    <?= e($dmd['prenom'] . ' ' . $dmd['nom']) ?>
+                                    <span class="font-normal text-ink-500">demande :</span>
+                                </p>
+
+                                <?php if ($dmd['type_demande'] === 'upload_fichier'): ?>
+                                    <p class="text-xs text-ink-600 mt-1">Fichier : <strong><?= e($payload['nom'] ?? '—') ?></strong></p>
+                                    <p class="text-xs text-ink-400"><?= number_format(($payload['taille'] ?? 0) / 1024, 1) ?> Ko</p>
+
+                                <?php elseif ($dmd['type_demande'] === 'modif_action'): ?>
+                                    <p class="text-xs text-ink-600 mt-1">Action : <strong><?= e($payload['nom'] ?? '—') ?></strong></p>
+                                    <?php if (!empty($payload['description'])): ?>
+                                        <p class="text-xs text-ink-500 mt-0.5"><?= e($payload['description']) ?></p>
+                                    <?php endif; ?>
+
+                                <?php elseif ($dmd['type_demande'] === 'changement_workflow'): ?>
+                                    <p class="text-xs text-ink-600 mt-1">
+                                        Workflow souhaité : <strong><?= e($payload['workflow_libelle'] ?? '—') ?></strong>
+                                    </p>
+                                <?php endif; ?>
+
+                                <p class="text-[10px] text-ink-400 mt-1"><?= date('d/m/Y H:i', strtotime($dmd['created_at'])) ?></p>
+                            </div>
+                        </div>
+
+                        <div class="flex items-center gap-2 mt-3 pt-3 border-t border-amber-200">
+                            <!-- Approuver -->
+                            <form action="/dossiers/approuver-demande/<?= $dossier['id_dossier'] ?>" method="POST" class="inline">
+                                <input type="hidden" name="id_demande" value="<?= $dmd['id_demande'] ?>">
+                                <button type="submit" class="btn-jade text-xs py-1.5 px-3">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" class="w-3 h-3"><polyline points="20 6 9 17 4 12"/></svg>
+                                    Approuver
+                                </button>
+                            </form>
+
+                            <!-- Rejeter -->
+                            <button type="button"
+                                    onclick="openRejectModal(<?= $dmd['id_demande'] ?>)"
+                                    class="btn-danger text-xs py-1.5 px-3">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" class="w-3 h-3"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                                Rejeter
+                            </button>
+                        </div>
+                    </li>
+                <?php endforeach; ?>
+                </ul>
             </div>
             <?php endif; ?>
 
@@ -562,6 +677,67 @@ function confirmDeleteAction() {
         form.submit();
     }
 }
+
+function openRejectModal(idDemande) {
+    document.getElementById('reject_id_demande').value = idDemande;
+    document.getElementById('rejectDialog').showModal();
+}
+
+function openWorkflowRequestModal() {
+    document.getElementById('workflowRequestDialog').showModal();
+}
+
 </script>
+
+<!-- Modal de rejet avec commentaire -->
+<dialog id="rejectDialog" class="rounded-2xl shadow-lift border border-ink-100 max-w-md w-full p-0 bg-white backdrop:bg-slate-900/50">
+    <div class="bg-rose px-6 py-4 flex items-center justify-between text-white">
+        <h3 class="font-display text-base font-bold">Rejeter la demande</h3>
+        <button type="button" onclick="document.getElementById('rejectDialog').close()" class="text-white/80 hover:text-white">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" class="w-5 h-5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+        </button>
+    </div>
+    <form id="rejectForm" action="/dossiers/rejeter-demande/<?= $dossier['id_dossier'] ?>" method="POST" class="p-6 space-y-4">
+        <input type="hidden" name="id_demande" id="reject_id_demande">
+        <div>
+            <label class="block text-xs font-semibold text-ink-600 mb-1">Motif du rejet <span class="text-ink-400 font-normal">(optionnel)</span></label>
+            <textarea name="commentaire" rows="3" class="t-input text-sm resize-none" placeholder="Expliquez la raison du rejet au collaborateur…"></textarea>
+        </div>
+        <div class="flex justify-end gap-3 pt-2 border-t border-ink-100">
+            <button type="button" onclick="document.getElementById('rejectDialog').close()" class="btn-ghost text-xs py-2 px-4">Annuler</button>
+            <button type="submit" class="btn-danger text-xs py-2 px-4">Confirmer le rejet</button>
+        </div>
+    </form>
+</dialog>
+
+<!-- Modal de demande de changement de workflow (collaborateur) -->
+<dialog id="workflowRequestDialog" class="rounded-2xl shadow-lift border border-ink-100 max-w-md w-full p-0 bg-white backdrop:bg-slate-900/50">
+    <div class="bg-primary px-6 py-4 flex items-center justify-between text-primary-foreground">
+        <h3 class="font-display text-base font-bold">Demander un changement de workflow</h3>
+        <button type="button" onclick="document.getElementById('workflowRequestDialog').close()" class="text-white/80 hover:text-white">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" class="w-5 h-5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+        </button>
+    </div>
+    <form action="/dossiers/demande-workflow/<?= $dossier['id_dossier'] ?>" method="POST" class="p-6 space-y-4">
+        <p class="text-xs text-ink-500">Le responsable devra approuver ce changement avant qu'il soit effectif.</p>
+        <?php
+            $allWorkflows = (new Workflow())->getAllStatuts();
+            $wfActuelId   = (int)($dossier['id_workflow'] ?? 1);
+        ?>
+        <div>
+            <label class="block text-xs font-semibold text-ink-600 mb-1">Étape souhaitée <span class="text-rose">*</span></label>
+            <select name="id_workflow" class="t-input text-sm" required>
+                <?php foreach ($allWorkflows as $wf): ?>
+                    <?php if ((int)$wf['id_workflow'] === $wfActuelId) continue; ?>
+                    <option value="<?= $wf['id_workflow'] ?>"><?= e($wf['libelle']) ?></option>
+                <?php endforeach; ?>
+            </select>
+        </div>
+        <div class="flex justify-end gap-3 pt-2 border-t border-ink-100">
+            <button type="button" onclick="document.getElementById('workflowRequestDialog').close()" class="btn-ghost text-xs py-2 px-4">Annuler</button>
+            <button type="submit" class="btn-primary text-xs py-2 px-4">Envoyer la demande</button>
+        </div>
+    </form>
+</dialog>
 
 <?php require __DIR__ . '/../partials/footer.php'; ?>
