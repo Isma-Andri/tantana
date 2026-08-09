@@ -35,14 +35,12 @@ if (!function_exists('urgencyClass')) {
         return 'text-ink-500';
     }
 }
-?>
+<main class="max-w-[90rem] 2xl:max-w-[98rem] w-full mx-auto px-4 sm:px-6 lg:px-8 xl:px-12 py-10 page-in">
 
-<main class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-10 page-in">
-
-    <div class="bg-white rounded-2xl shadow-card p-6 mb-8 flex flex-col md:flex-row items-center justify-between gap-6 border border-slate-100 hover-lift">
-        <div class="space-y-2 max-w-xl">
+    <div class="bg-white rounded-2xl shadow-card p-6 mb-8 flex flex-col lg:flex-row items-center justify-between gap-6 border border-slate-100 hover-lift">
+        <div class="space-y-2 max-w-2xl">
             <span class="badge badge-jade">Agenda d'État</span>
-            <h1 class="font-display text-2xl font-bold text-slate-900">Tableau de Bord Diplomatique</h1>
+            <h1 class="font-display text-2xl sm:text-3xl font-bold text-slate-900">Tableau de Bord Diplomatique</h1>
             <p class="text-sm text-slate-500 leading-relaxed">
                 <?= $isChef ? 'Gérez et suivez l\'évolution des traités, résolutions et dossiers de politique interministériels.' : 'Consultez les dossiers de politique et actions auxquels vous collaborez.' ?>
             </p>
@@ -55,7 +53,7 @@ if (!function_exists('urgencyClass')) {
             </div>
             <?php endif; ?>
         </div>
-        <img src="/img/diplomatic_summit.jpg" alt="Sommet Diplomatique" class="w-full md:w-72 h-36 rounded-xl object-cover border border-slate-200/60 shadow-sm flex-shrink-0">
+        <img src="/img/diplomatic_summit.jpg" alt="Sommet Diplomatique" class="w-full lg:w-96 h-40 rounded-xl object-cover border border-slate-200/60 shadow-sm flex-shrink-0">
     </div>
 
     <!-- Statistiques -->
@@ -95,7 +93,7 @@ if (!function_exists('urgencyClass')) {
     </div>
 
     <?php else: ?>
-    <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5">
+    <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-5">
         <?php foreach ($dossiers as $p):
             $badgeClass = $statutColors[$p['statut_libelle']] ?? 'badge-gray';
             $isOwner    = ((int) $p['cree_par'] === (int) $user['id']);

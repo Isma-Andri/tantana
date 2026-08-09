@@ -9,7 +9,7 @@ $isAdmin  = $user['role'] === 'Administrateur';
 ?>
 
 <nav class="bg-background border-b border-border sticky top-0 z-50">
-    <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+    <div class="max-w-[90rem] 2xl:max-w-[98rem] w-full mx-auto px-4 sm:px-6 lg:px-8 xl:px-12">
         <div class="flex items-center justify-between h-16">
 
             <a href="/dossiers" class="flex items-center gap-2 group">

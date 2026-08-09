@@ -6,7 +6,7 @@ require __DIR__ . '/../partials/navbar.php';
 require __DIR__ . '/../partials/flash.php';
 ?>
 
-<main class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-10 page-in">
+<main class="max-w-[90rem] 2xl:max-w-[96rem] w-full mx-auto px-4 sm:px-6 lg:px-8 xl:px-12 py-10 page-in">
 
     <!-- Header Banner -->
     <div class="bg-white rounded-2xl shadow-card p-6 mb-8 flex flex-col md:flex-row items-center justify-between gap-6 border border-slate-100 hover-lift">

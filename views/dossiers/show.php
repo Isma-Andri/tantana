@@ -40,7 +40,7 @@ if ($dossier['date_debut'] && $dossier['date_limite']) {
 }
 ?>
 
-<main class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-10 page-in">
+<main class="max-w-[90rem] 2xl:max-w-[96rem] w-full mx-auto px-4 sm:px-6 lg:px-8 xl:px-12 py-10 page-in">
 
     <nav class="flex items-center gap-2 text-sm text-ink-500 mb-8">
         <a href="/dossiers" class="hover:text-ink transition-colors">Dossiers</a>
