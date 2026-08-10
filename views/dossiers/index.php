@@ -96,8 +96,9 @@ if (!function_exists('urgencyClass')) {
     <?php else: ?>
     <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-5">
         <?php foreach ($dossiers as $p):
-            $badgeClass = $statutColors[$p['statut_libelle']] ?? 'badge-gray';
-            $isOwner    = ((int) $p['cree_par'] === (int) $user['id']);
+            $badgeClass  = $statutColors[$p['statut_libelle']] ?? 'badge-gray';
+            $isOwner     = ((int) $p['cree_par'] === (int) $user['id']);
+            $canEditCard = $isOwner || $isAdmin || ($p['partage_niveau'] ?? '') === 'Modification';
         ?>
         <div class="bg-card rounded-lg border border-border hover:border-ring/30 shadow-sm hover-lift transition-all duration-300 flex flex-col overflow-hidden group">
             <div class="p-5 flex flex-col flex-1">
@@ -125,19 +126,28 @@ if (!function_exists('urgencyClass')) {
                         </svg>
                         <span><?= (int) $p['nb_membres'] ?> collaborateur<?= $p['nb_membres'] > 1 ? 's' : '' ?></span>
                     </div>
+                    <?php if (!empty($p['partage_niveau'])): ?>
+                    <div class="pt-1">
+                        <span class="badge badge-sun text-[10px]" title="Accès partagé à ce dossier">
+                            Partagé (<?= e($p['partage_niveau']) ?>)
+                        </span>
+                    </div>
+                    <?php endif; ?>
                 </div>
 
                 <div class="flex items-center gap-2 pt-4 border-t border-ink-100">
                     <a href="/dossiers/show/<?= $p['id_dossier'] ?>" class="btn-ghost text-xs flex-1 justify-center py-2">
                         Voir le détail
                     </a>
-                    <?php if ($isOwner && $isChef): ?>
+                    <?php if ($canEditCard): ?>
                     <a href="/dossiers/edit/<?= $p['id_dossier'] ?>"
                        class="w-8 h-8 flex items-center justify-center rounded-lg text-ink-500 hover:bg-ink-100 transition-colors" title="Modifier">
                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="w-4 h-4">
                             <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
                         </svg>
                     </a>
+                    <?php endif; ?>
+                    <?php if ($isOwner || $isAdmin): ?>
                     <form action="/dossiers/delete/<?= $p['id_dossier'] ?>" method="POST"
                           onsubmit="return confirm('Supprimer « <?= e(addslashes($p['nom'])) ?> » ?')">
                         <button type="submit"

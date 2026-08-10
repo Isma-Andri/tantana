@@ -89,6 +89,10 @@ class DossierController
         $user = $_SESSION['user'];
         $isOwnerOrAdmin = ((int)$dossier['cree_par'] === (int)$user['id'])
                        || $user['role'] === 'Administrateur';
+        $canEdit = $this->dossierModel->canUserEdit($id, (int)$user['id'], $user['role']);
+        $userShareNiveau = (new PartageDossier())->getNiveauAcces($id, (int)$user['id']);
+        $isChef = $isOwnerOrAdmin || $canEdit;
+
         $demandesEnAttente = $isOwnerOrAdmin
             ? (new DemandeValidation())->getEnAttenteByDossier($id)
             : [];
@@ -98,18 +102,17 @@ class DossierController
 
     public function edit(int $id): void
     {
-        requireRole('Responsable de dossier', 'Administrateur');
         $dossier  = $this->findOrFail($id);
         $this->requireNotSigned($dossier);
-        $statuts = $this->dossierModel->getStatuts();
-        $workflows = (new Workflow())->getAllStatuts();
 
-        $isAdmin = $_SESSION['user']['role'] === 'Administrateur';
-        if ((int) $dossier['cree_par'] !== $_SESSION['user']['id'] && !$isAdmin) {
+        $canEdit = $this->dossierModel->canUserEdit($id, (int)$_SESSION['user']['id'], $_SESSION['user']['role']);
+        if (!$canEdit) {
             setFlash('error', 'Vous n\'êtes pas autorisé à modifier ce dossier.');
             redirect('dossiers');
         }
 
+        $statuts = $this->dossierModel->getStatuts();
+        $workflows = (new Workflow())->getAllStatuts();
         $userModel = new User();
         $users = $userModel->getAllUsers();
         $membres = $this->dossierModel->getMembers($id);
@@ -120,9 +123,14 @@ class DossierController
 
     public function update(int $id): void
     {
-        requireRole('Responsable de dossier', 'Administrateur');
         $dossier = $this->findOrFail($id);
         $this->requireNotSigned($dossier);
+
+        $canEdit = $this->dossierModel->canUserEdit($id, (int)$_SESSION['user']['id'], $_SESSION['user']['role']);
+        if (!$canEdit) {
+            setFlash('error', 'Vous n\'êtes pas autorisé à modifier ce dossier.');
+            redirect('dossiers');
+        }
 
         if (empty(trim($_POST['nom'] ?? ''))) {
             setFlash('error', 'Le nom du dossier est obligatoire.');
@@ -229,7 +237,8 @@ class DossierController
         $this->requireNotSigned($dossier);
 
         $isAdmin = $_SESSION['user']['role'] === 'Administrateur';
-        $isChef  = $_SESSION['user']['role'] === 'Responsable de dossier' || $isAdmin;
+        $canEdit = $this->dossierModel->canUserEdit($id, (int)$_SESSION['user']['id'], $_SESSION['user']['role']);
+        $isChef  = $_SESSION['user']['role'] === 'Responsable de dossier' || $isAdmin || $canEdit;
 
         if (!$isChef && (int)$dossier['droit_depot'] === 0) {
             setFlash('error', 'Le dépôt de fichiers a été désactivé par le responsable pour les collaborateurs.');
@@ -454,7 +463,8 @@ class DossierController
         }
 
         $isAdmin = $_SESSION['user']['role'] === 'Administrateur';
-        $isChef  = $_SESSION['user']['role'] === 'Responsable de dossier' || $isAdmin;
+        $canEdit = $this->dossierModel->canUserEdit($id, (int)$_SESSION['user']['id'], $_SESSION['user']['role']);
+        $isChef  = $_SESSION['user']['role'] === 'Responsable de dossier' || $isAdmin || $canEdit;
         $actionModel = new Action();
 
         // --- Modification complète (nom, dates, priorité…) ---

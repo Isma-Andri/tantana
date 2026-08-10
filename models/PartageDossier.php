@@ -15,8 +15,9 @@ class PartageDossier
     public function addPartage(int $idDossier, int $idUser, string $niveauAcces = 'Lecture'): bool
     {
         $stmt = $this->pdo->prepare(
-            'INSERT IGNORE INTO partage_dossier (id_dossier, id_user, niveau_acces)
-             VALUES (:id_dossier, :id_user, :niveau_acces)'
+            'INSERT INTO partage_dossier (id_dossier, id_user, niveau_acces)
+             VALUES (:id_dossier, :id_user, :niveau_acces)
+             ON DUPLICATE KEY UPDATE niveau_acces = VALUES(niveau_acces)'
         );
         return $stmt->execute([
             ':id_dossier' => $idDossier,
@@ -56,5 +57,15 @@ class PartageDossier
         );
         $stmt->execute([':id_user' => $idUser]);
         return $stmt->fetchAll();
+    }
+
+    public function getNiveauAcces(int $idDossier, int $idUser): ?string
+    {
+        $stmt = $this->pdo->prepare(
+            'SELECT niveau_acces FROM partage_dossier WHERE id_dossier = :did AND id_user = :uid LIMIT 1'
+        );
+        $stmt->execute([':did' => $idDossier, ':uid' => $idUser]);
+        $val = $stmt->fetchColumn();
+        return $val !== false ? (string)$val : null;
     }
 }

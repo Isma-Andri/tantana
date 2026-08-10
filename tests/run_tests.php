@@ -273,6 +273,22 @@ try {
     $accessPartage = $dossierModel->hasAccess($dossierId, $idNonInvite, 'Collaborateur');
     assertTest($accessPartage, "L'utilisateur externe a maintenant accès suite au partage.");
 
+    // Vérification de la présence dans le dashboard et des droits de modification
+    $dossiersUserNonInvite = $dossierModel->getAllForUser($idNonInvite, 'Collaborateur');
+    $containsSharedDossier = false;
+    foreach ($dossiersUserNonInvite as $d) {
+        if ((int)$d['id_dossier'] === $dossierId) {
+            $containsSharedDossier = true;
+            break;
+        }
+    }
+    assertTest($containsSharedDossier, "Le dossier partagé apparaît dans le tableau de bord de l'utilisateur destinataire.");
+
+    // Test partage avec droits de modification
+    $partageModel->addPartage($dossierId, $idNonInvite, 'Modification');
+    $canEditShared = $dossierModel->canUserEdit($dossierId, $idNonInvite, 'Collaborateur');
+    assertTest($canEditShared, "L'utilisateur avec partage Modification possède les droits d'édition.");
+
     $removePartageOk = $partageModel->removePartage($dossierId, $idNonInvite);
     $accessApresRetrait = $dossierModel->hasAccess($dossierId, $idNonInvite, 'Collaborateur');
     assertTest($removePartageOk && $accessApresRetrait === false, "Retrait du partage et révocation d'accès réussis.");

@@ -57,9 +57,16 @@ if ($dossier['date_debut'] && $dossier['date_limite']) {
                 <div class="p-7">
                     <div class="flex items-start justify-between gap-4 mb-5">
                         <h1 class="font-display text-2xl font-extrabold text-ink leading-tight"><?= e($dossier['nom']) ?></h1>
-                        <span class="badge <?= $statutColors[$dossier['statut_libelle']] ?? 'badge-gray' ?> flex-shrink-0">
-                            <?= e($dossier['statut_libelle']) ?>
-                        </span>
+                        <div class="flex items-center gap-2 flex-shrink-0">
+                            <?php if (!empty($userShareNiveau)): ?>
+                            <span class="badge badge-sun" title="Dossier partagé avec vous">
+                                Partagé (<?= e($userShareNiveau) ?>)
+                            </span>
+                            <?php endif; ?>
+                            <span class="badge <?= $statutColors[$dossier['statut_libelle']] ?? 'badge-gray' ?>">
+                                <?= e($dossier['statut_libelle']) ?>
+                            </span>
+                        </div>
                     </div>
 
                     <?php if ($dossier['description']): ?>

@@ -41,7 +41,8 @@ class Dossier
             $stmt = $this->pdo->query(
                 'SELECT p.*, s.libelle AS statut_libelle, sw.libelle AS workflow_libelle,
                         u.nom AS createur_nom, u.prenom AS createur_prenom,
-                        (SELECT COUNT(*) FROM participer WHERE id_dossier = p.id_dossier) AS nb_membres
+                        (SELECT COUNT(*) FROM participer WHERE id_dossier = p.id_dossier) AS nb_membres,
+                        NULL AS partage_niveau
                  FROM dossiers p
                  JOIN statut s ON p.id_statut = s.id_statut
                  JOIN statut_workflow sw ON p.id_workflow = sw.id_workflow
@@ -51,35 +52,26 @@ class Dossier
             return $stmt->fetchAll();
         }
 
-        // Responsable de dossier : ses dossiers + ceux où il participe
-        if ($role === 'Responsable de dossier') {
-            $stmt = $this->pdo->prepare(
-                'SELECT DISTINCT p.*, s.libelle AS statut_libelle, sw.libelle AS workflow_libelle,
-                        u.nom AS createur_nom, u.prenom AS createur_prenom,
-                        (SELECT COUNT(*) FROM participer WHERE id_dossier = p.id_dossier) AS nb_membres
-                 FROM dossiers p
-                 JOIN statut s ON p.id_statut = s.id_statut
-                 JOIN statut_workflow sw ON p.id_workflow = sw.id_workflow
-                 JOIN users  u ON p.cree_par  = u.id_user
-                 LEFT JOIN participer pa ON pa.id_dossier = p.id_dossier AND pa.id_user = :uid
-                 WHERE p.cree_par = :uid2 OR pa.id_user = :uid3
-                 ORDER BY p.date_creation DESC'
-            );
-            $stmt->execute([':uid' => $userId, ':uid2' => $userId, ':uid3' => $userId]);
-        } else {
-            $stmt = $this->pdo->prepare(
-                'SELECT p.*, s.libelle AS statut_libelle, sw.libelle AS workflow_libelle,
-                        u.nom AS createur_nom, u.prenom AS createur_prenom,
-                        (SELECT COUNT(*) FROM participer WHERE id_dossier = p.id_dossier) AS nb_membres
-                 FROM dossiers p
-                 JOIN statut     s  ON p.id_statut = s.id_statut
-                 JOIN statut_workflow sw ON p.id_workflow = sw.id_workflow
-                 JOIN users      u  ON p.cree_par  = u.id_user
-                 JOIN participer pa ON pa.id_dossier = p.id_dossier AND pa.id_user = :uid
-                 ORDER BY p.date_creation DESC'
-            );
-            $stmt->execute([':uid' => $userId]);
-        }
+        $stmt = $this->pdo->prepare(
+            'SELECT p.*, s.libelle AS statut_libelle, sw.libelle AS workflow_libelle,
+                    u.nom AS createur_nom, u.prenom AS createur_prenom,
+                    (SELECT COUNT(*) FROM participer WHERE id_dossier = p.id_dossier) AS nb_membres,
+                    (SELECT niveau_acces FROM partage_dossier WHERE id_dossier = p.id_dossier AND id_user = :uid1 LIMIT 1) AS partage_niveau
+             FROM dossiers p
+             JOIN statut s ON p.id_statut = s.id_statut
+             JOIN statut_workflow sw ON p.id_workflow = sw.id_workflow
+             JOIN users  u ON p.cree_par  = u.id_user
+             WHERE p.cree_par = :uid2
+                OR EXISTS (SELECT 1 FROM participer WHERE id_dossier = p.id_dossier AND id_user = :uid3)
+                OR EXISTS (SELECT 1 FROM partage_dossier WHERE id_dossier = p.id_dossier AND id_user = :uid4)
+             ORDER BY p.date_creation DESC'
+        );
+        $stmt->execute([
+            ':uid1' => $userId,
+            ':uid2' => $userId,
+            ':uid3' => $userId,
+            ':uid4' => $userId,
+        ]);
 
         return $stmt->fetchAll();
     }
@@ -125,6 +117,31 @@ class Dossier
         $stmt = $this->pdo->prepare('SELECT 1 FROM partage_dossier WHERE id_dossier = :did AND id_user = :uid LIMIT 1');
         $stmt->execute([':did' => $dossierId, ':uid' => $userId]);
         if ($stmt->fetch()) {
+            return true;
+        }
+
+        return false;
+    }
+
+    public function canUserEdit(int $dossierId, int $userId, string $role): bool
+    {
+        if ($role === 'Administrateur') {
+            return true;
+        }
+
+        // Creator check
+        $stmt = $this->pdo->prepare('SELECT cree_par FROM dossiers WHERE id_dossier = :id LIMIT 1');
+        $stmt->execute([':id' => $dossierId]);
+        $creatorId = $stmt->fetchColumn();
+        if ($creatorId !== false && (int)$creatorId === $userId) {
+            return true;
+        }
+
+        // Shared with Modification permission
+        $stmt = $this->pdo->prepare('SELECT niveau_acces FROM partage_dossier WHERE id_dossier = :did AND id_user = :uid LIMIT 1');
+        $stmt->execute([':did' => $dossierId, ':uid' => $userId]);
+        $niveau = $stmt->fetchColumn();
+        if ($niveau === 'Modification') {
             return true;
         }
 
